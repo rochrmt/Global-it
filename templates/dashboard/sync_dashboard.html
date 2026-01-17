@@ -1,0 +1,710 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Synchronisation des Images - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-sync-alt me-2"></i>Synchronisation des Images
+            </h1>
+            <p class="text-muted mt-2">Synchronisez les images du dashboard vers le site principal</p>
+        </div>
+
+<!-- Modal pour la synchronisation des images carousel -->
+<div class="modal fade" id="syncCarouselModal" tabindex="-1" aria-labelledby="syncCarouselModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="syncCarouselModalLabel">Assigner une image au carousel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="syncCarouselForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="carousel_id" name="carousel_id">
+                    <div class="mb-3">
+                        <label for="carousel_image_id" class="form-label">Sélectionner une image</label>
+                        <select class="form-select" id="carousel_image_id" name="image_id" required>
+                            <option value="">-- Choisir une image --</option>
+                            {% for image in carousel_images %}
+                                {% if image.image %}
+                                    <option value="{{ image.id }}">{{ image.titre }} ({{ image.image.name|truncatechars:30 }})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            Sélectionnez une image carousel qui a déjà une image associée pour la synchroniser.
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-warning" onclick="syncCarousel()">Synchroniser</button>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Images about disponibles
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ sync_status.available_about_images }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-image fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    </div>
+
+    <!-- Statut de synchronisation -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Services sans image
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ sync_status.services_without_images }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-cog fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Formations sans image
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ sync_status.formations_without_images }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-graduation-cap fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Images services disponibles
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ sync_status.available_service_images }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-image fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Images formations disponibles
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ sync_status.available_formation_images }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-images fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-left-secondary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                Images carousel disponibles
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ sync_status.available_carousel_images }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-images fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Synchronisation des Services -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cog me-2"></i>Services
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Image actuelle</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service in services %}
+                                <tr>
+                                    <td>{{ service.titre }}</td>
+                                    <td>
+                                        {% if service.image %}
+                                            <img src="{{ service.image.url }}" alt="{{ service.titre }}" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                            <span class="text-muted">Pas d'image</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-primary btn-sm sync-service-btn" 
+                                                data-service-id="{{ service.id }}"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#syncServiceModal">
+                                            <i class="fas fa-sync-alt"></i> Synchroniser
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Synchronisation des Formations -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-graduation-cap me-2"></i>Formations
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Formation</th>
+                                    <th>Image actuelle</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for formation in formations %}
+                                <tr>
+                                    <td>{{ formation.titre }}</td>
+                                    <td>
+                                        {% if formation.image %}
+                                            <img src="{{ formation.image.url }}" alt="{{ formation.titre }}" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                            <span class="text-muted">Pas d'image</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-success btn-sm sync-formation-btn" 
+                                                data-formation-id="{{ formation.id }}"
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#syncFormationModal">
+                                            <i class="fas fa-sync-alt"></i> Synchroniser
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Synchronisation des Images Carousel -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-images me-2"></i>Images du Carousel (Hero)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <p class="text-muted mb-3">Les images du carousel sont utilisées dans la section hero de la page d'accueil.</p>
+                            <div class="table-responsive">
+                                <table class="table table-bordered" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>Image</th>
+                                            <th>Nom</th>
+                                            <th>Type</th>
+                                            <th>Statut</th>
+                                            <th>Image actuelle</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for image in carousel_images %}
+                                        <tr>
+                                            <td>
+                                                {% if image.image %}
+                                                    <img src="{{ image.image.url }}" alt="{{ image.titre }}" style="width: 50px; height: 50px; object-fit: cover;">
+                                                {% else %}
+                                                    <span class="text-muted">Pas d'image</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ image.titre }}</td>
+                                            <td><span class="badge bg-warning">Carousel</span></td>
+                                            <td>
+                                                {% if image.est_actif %}
+                                                    <span class="badge bg-success">Active</span>
+                                                {% else %}
+                                                    <span class="badge bg-secondary">Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if image.image %}
+                                                    <small class="text-muted">Avec image</small>
+                                                {% else %}
+                                                    <span class="text-danger">Pas d'image</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if not image.image %}
+                                                    <button class="btn btn-warning btn-sm sync-carousel-btn" 
+                                                            data-carousel-id="{{ image.id }}"
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#syncCarouselModal">
+                                                        <i class="fas fa-sync-alt"></i> Assigner image
+                                                    </button>
+                                                {% else %}
+                                                    <small class="text-success">
+                                                        <i class="fas fa-check"></i> Prêt
+                                                    </small>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">
+                                                Aucune image carousel disponible
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> Pour assigner ces images au carousel, modifiez le template home.html ou utilisez la configuration du site.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- Configuration du site -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-cogs me-2"></i>Configuration du site
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>Image Hero</h6>
+                            <div class="mb-2">
+                                {% if site_config.hero_image %}
+                                    <img src="{{ site_config.hero_image.url }}" alt="Hero" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                    <small class="text-muted d-block">Actuelle: {{ site_config.hero_image.name|truncatechars:20 }}</small>
+                                {% else %}
+                                    <span class="text-muted">Pas d'image hero</span>
+                                {% endif %}
+                            </div>
+                            <button class="btn btn-info btn-sm sync-config-btn" data-config-field="hero_image"
+                                    data-bs-toggle="modal" data-bs-target="#syncConfigModal">
+                                <i class="fas fa-sync-alt"></i> Synchroniser Hero
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Image À propos</h6>
+                            <div class="mb-2">
+                                {% if site_config.about_image %}
+                                    <img src="{{ site_config.about_image.url }}" alt="About" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                    <small class="text-muted d-block">Actuelle: {{ site_config.about_image.name|truncatechars:20 }}</small>
+                                {% else %}
+                                    <span class="text-muted">Pas d'image about</span>
+                                {% endif %}
+                            </div>
+                            <button class="btn btn-info btn-sm sync-config-btn" data-config-field="about_image"
+                                    data-bs-toggle="modal" data-bs-target="#syncConfigModal">
+                                <i class="fas fa-sync-alt"></i> Synchroniser About
+                            </button>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>Logo</h6>
+                            <div class="mb-2">
+                                {% if site_config.logo %}
+                                    <img src="{{ site_config.logo.url }}" alt="Logo" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                    <small class="text-muted d-block">Actuel: {{ site_config.logo.name|truncatechars:20 }}</small>
+                                {% else %}
+                                    <span class="text-muted">Pas de logo</span>
+                                {% endif %}
+                            </div>
+                            <button class="btn btn-info btn-sm sync-config-btn" data-config-field="logo"
+                                    data-bs-toggle="modal" data-bs-target="#syncConfigModal">
+                                <i class="fas fa-sync-alt"></i> Synchroniser Logo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour la synchronisation des services -->
+<div class="modal fade" id="syncServiceModal" tabindex="-1" aria-labelledby="syncServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="syncServiceModalLabel">Synchroniser une image vers le service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="syncServiceForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="service_id" name="service_id">
+                    <div class="mb-3">
+                        <label for="service_image_id" class="form-label">Sélectionner une image</label>
+                        <select class="form-select" id="service_image_id" name="image_id" required>
+                            <option value="">-- Choisir une image --</option>
+                            {% for image in service_images %}
+                            <option value="{{ image.id }}">{{ image.name }} ({{ image.image_type }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="syncService()">Synchroniser</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour la synchronisation des formations -->
+<div class="modal fade" id="syncFormationModal" tabindex="-1" aria-labelledby="syncFormationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="syncFormationModalLabel">Synchroniser une image vers la formation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="syncFormationForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="formation_id" name="formation_id">
+                    <div class="mb-3">
+                        <label for="formation_image_id" class="form-label">Sélectionner une image</label>
+                        <select class="form-select" id="formation_image_id" name="image_id" required>
+                            <option value="">-- Choisir une image --</option>
+                            {% for image in formation_images %}
+                            <option value="{{ image.id }}">{{ image.name }} ({{ image.image_type }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-success" onclick="syncFormation()">Synchroniser</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour la synchronisation de la configuration -->
+<div class="modal fade" id="syncConfigModal" tabindex="-1" aria-labelledby="syncConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="syncConfigModalLabel">Synchroniser une image vers la configuration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="syncConfigForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="config_field" name="config_field">
+                    <div class="mb-3">
+                        <label for="config_image_id" class="form-label">Sélectionner une image</label>
+                        <select class="form-select" id="config_image_id" name="image_id" required>
+                            <option value="">-- Choisir une image --</option>
+                            {% for image in carousel_images %}
+                            <option value="{{ image.id }}">{{ image.name }} (Carousel)</option>
+                            {% endfor %}
+                            {% for image in about_images %}
+                            <option value="{{ image.id }}">{{ image.name }} (About)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-info" onclick="syncConfig()">Synchroniser</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour la synchronisation des images carousel -->
+<div class="modal fade" id="syncCarouselModal" tabindex="-1" aria-labelledby="syncCarouselModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="syncCarouselModalLabel">Assigner une image au carousel</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="syncCarouselForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="carousel_id" name="carousel_id">
+                    <div class="mb-3">
+                        <label for="carousel_image_id" class="form-label">Sélectionner une image</label>
+                        <select class="form-select" id="carousel_image_id" name="image_id" required>
+                            <option value="">-- Choisir une image --</option>
+                            {% for image in carousel_images %}
+                                {% if image.image %}
+                                    <option value="{{ image.id }}">{{ image.titre }} ({{ image.image.name|truncatechars:30 }})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">
+                            Sélectionnez une image carousel qui a déjà une image associée pour la synchroniser.
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-warning" onclick="syncCarousel()">Synchroniser</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.sync-card {
+    border-left: 4px solid;
+}
+.sync-card.border-left-primary {
+    border-left-color: #4e73df;
+}
+.sync-card.border-left-success {
+    border-left-color: #1cc88a;
+}
+.sync-card.border-left-info {
+    border-left-color: #36b9cc;
+}
+.sync-card.border-left-warning {
+    border-left-color: #f6c23e;
+}
+</style>
+
+<script>
+// Gestion des boutons de synchronisation
+document.addEventListener('DOMContentLoaded', function() {
+    // Service sync buttons
+    document.querySelectorAll('.sync-service-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('service_id').value = this.dataset.serviceId;
+        });
+    });
+    
+    // Formation sync buttons
+    document.querySelectorAll('.sync-formation-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            console.log('Formation button clicked, formation ID:', this.dataset.formationId);
+            document.getElementById('formation_id').value = this.dataset.formationId;
+        });
+    });
+    
+    // Carousel sync buttons
+    document.querySelectorAll('.sync-carousel-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('carousel_id').value = this.dataset.carouselId;
+        });
+    });
+    
+    // Config sync buttons
+    document.querySelectorAll('.sync-config-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.getElementById('config_field').value = this.dataset.configField;
+        });
+    });
+});
+
+// Fonctions de synchronisation
+function syncService() {
+    const form = document.getElementById('syncServiceForm');
+    const formData = new FormData(form);
+    
+    fetch("{% url 'dashboard:sync_image_to_service' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Image synchronisée avec succès!');
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Erreur de synchronisation');
+        console.error('Error:', error);
+    });
+}
+
+function syncCarousel() {
+    const form = document.getElementById('syncCarouselForm');
+    const formData = new FormData(form);
+    
+    fetch("{% url 'dashboard:sync_image_to_carousel' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Image synchronisée avec succès!');
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Erreur de synchronisation');
+        console.error('Error:', error);
+    });
+}
+
+function syncFormation() {
+    console.log('syncFormation function called');
+    const form = document.getElementById('syncFormationForm');
+    const formData = new FormData(form);
+    
+    // Debug: log form data
+    console.log('Formation ID:', formData.get('formation_id'));
+    console.log('Image ID:', formData.get('image_id'));
+    
+    if (!formData.get('formation_id') || !formData.get('image_id')) {
+        alert('Veuillez sélectionner une image');
+        return;
+    }
+    
+    fetch("{% url 'dashboard:sync_image_to_formation' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => {
+        console.log('Response received:', response);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Data received:', data);
+        if (data.success) {
+            alert('Image synchronisée avec succès!');
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Erreur de synchronisation: ' + error.message);
+    });
+}
+
+function syncConfig() {
+    const form = document.getElementById('syncConfigForm');
+    const formData = new FormData(form);
+    
+    fetch("{% url 'dashboard:sync_image_to_site_config' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Image synchronisée avec succès!');
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Erreur de synchronisation');
+        console.error('Error:', error);
+    });
+}
+</script>
+{% endblock %}

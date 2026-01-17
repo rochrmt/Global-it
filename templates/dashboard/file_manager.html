@@ -1,0 +1,421 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% load dashboard_tags %}
+
+{% block title %}Gestionnaire de Fichiers - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-folder-open me-2"></i>Gestionnaire de Fichiers
+        </h1>
+        <div>
+            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                <i class="fas fa-upload me-1"></i>Upload
+            </button>
+            <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createFolderModal">
+                <i class="fas fa-folder-plus me-1"></i>Nouveau Dossier
+            </button>
+            <button class="btn btn-outline-danger btn-sm" onclick="deleteSelected()" id="deleteSelectedBtn" style="display: none;">
+                <i class="fas fa-trash me-1"></i>Supprimer la sélection
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Dossiers
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_folders }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-folder fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Fichiers
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_files }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Taille Totale
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.total_size|filesizeformat }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hdd fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Uploads Récents
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ stats.recent_uploads }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation et filtrage -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb mb-0">
+                                    <li class="breadcrumb-item"><a href="{% url 'dashboard:file_manager' %}">
+                                        <i class="fas fa-home"></i> Racine
+                                    </a></li>
+                                    {% if current_path %}
+                                    <li class="breadcrumb-item active">{{ current_path }}</li>
+                                    {% endif %}
+                                </ol>
+                            </nav>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="searchInput" placeholder="Rechercher des fichiers...">
+                                <button class="btn btn-outline-secondary" type="button" onclick="searchFiles()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Liste des fichiers et dossiers -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Fichiers et Dossiers</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="fileTable">
+                            <thead>
+                                <tr>
+                                    <th width="30">
+                                        <input type="checkbox" id="selectAll" onclick="toggleSelectAll()">
+                                    </th>
+                                    <th>Nom</th>
+                                    <th>Type</th>
+                                    <th>Taille</th>
+                                    <th>Modifié</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dossiers -->
+                                {% for folder in folders %}
+                                <tr class="table-light">
+                                    <td>
+                                        <input type="checkbox" class="folder-checkbox" data-id="{{ folder.id }}">
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-folder text-warning me-2"></i>
+                                        <a href="?path={{ folder.name }}" class="text-decoration-none">
+                                            <strong>{{ folder.name }}</strong>
+                                        </a>
+                                    </td>
+                                    <td><span class="badge bg-warning">Dossier</span></td>
+                                    <td>{{ folder.file_count }} fichier(s)</td>
+                                    <td>{{ folder.modified_at|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-primary" onclick="renameFolder('{{ folder.id }}', '{{ folder.name }}')" title="Renommer">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-outline-danger" onclick="deleteFolder('{{ folder.id }}', '{{ folder.name }}')" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                <!-- Fichiers -->
+                                {% for file in files %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="file-checkbox" data-id="{{ file.id }}">
+                                    </td>
+                                    <td>
+                                        <i class="fas {{ file.get_icon_class }} {{ file.get_color_class }} me-2"></i>
+                                        {{ file.name }}
+                                    </td>
+                                    <td><span class="badge bg-secondary">{{ file.name|slice:"-3:"|upper }}</span></td>
+                                    <td>{{ file.size|filesizeformat }}</td>
+                                    <td>{{ file.modified_at|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'dashboard:view_file' file.id %}" class="btn btn-outline-info" title="Visualiser" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'dashboard:download_file' file.id %}" class="btn btn-outline-success" title="Télécharger">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            <button class="btn btn-outline-danger" onclick="deleteFile('{{ file.id }}', '{{ file.name }}')" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-5">
+                                        <i class="fas fa-folder-open fa-3x mb-3"></i>
+                                        <p>Aucun fichier ou dossier trouvé</p>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Upload -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Uploader des fichiers</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'dashboard:upload_file' %}" enctype="multipart/form-data" id="uploadForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="files" class="form-label">Sélectionner des fichiers</label>
+                        <input type="file" class="form-control" id="files" name="files" multiple accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt">
+                        <div class="form-text">Formats acceptés : images, PDF, documents Office, texte</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="folder" class="form-label">Dossier de destination</label>
+                        <select class="form-select" id="folder" name="folder">
+                            <option value="">Racine</option>
+                            {% for folder in available_folders %}
+                            <option value="{{ folder.id }}">{{ folder.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="progress mb-3" style="display: none;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="submitUpload()">Uploader</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Créer Dossier -->
+<div class="modal fade" id="createFolderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Créer un nouveau dossier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" action="{% url 'dashboard:create_folder' %}" id="createFolderForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="folderName" class="form-label">Nom du dossier</label>
+                        <input type="text" class="form-control" id="folderName" name="name" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="submitCreateFolder()">Créer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fonctions JavaScript pour le gestionnaire de fichiers
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:not(#selectAll)');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+    updateDeleteButton();
+}
+
+function updateDeleteButton() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]:not(#selectAll):checked');
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    if (checkboxes.length > 0) {
+        deleteBtn.style.display = 'inline-block';
+        deleteBtn.innerHTML = `<i class="fas fa-trash me-1"></i>Supprimer (${checkboxes.length})`;
+    } else {
+        deleteBtn.style.display = 'none';
+    }
+}
+
+function deleteFile(fileId, fileName) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le fichier "${fileName}" ?`)) {
+        fetch(`/dashboard/files/${fileId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        });
+    }
+}
+
+function deleteFolder(folderId, folderName) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer le dossier "${folderName}" et tout son contenu ?`)) {
+        // Implémenter la suppression de dossier
+        alert('Suppression de dossier non implémentée');
+    }
+}
+
+function deleteSelected() {
+    const selectedItems = [];
+    document.querySelectorAll('input[type="checkbox"]:not(#selectAll):checked').forEach(checkbox => {
+        selectedItems.push({
+            id: checkbox.dataset.id,
+            type: checkbox.classList.contains('file-checkbox') ? 'file' : 'folder'
+        });
+    });
+    
+    if (selectedItems.length === 0) {
+        alert('Aucun élément sélectionné');
+        return;
+    }
+    
+    if (confirm(`Êtes-vous sûr de vouloir supprimer ${selectedItems.length} élément(s) ?`)) {
+        fetch('/dashboard/files/delete-selected/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ items: selectedItems })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        });
+    }
+}
+
+function submitUpload() {
+    document.getElementById('uploadForm').submit();
+}
+
+function submitCreateFolder() {
+    const folderName = document.getElementById('folderName').value.trim();
+    if (!folderName) {
+        alert('Veuillez entrer un nom de dossier');
+        return;
+    }
+    
+    fetch('/dashboard/files/create-folder/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name: folderName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Erreur lors de la création du dossier: ' + data.error);
+        }
+    });
+}
+
+function searchFiles() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#fileTable tbody tr');
+    
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+}
+
+// Ajouter les écouteurs d'événements
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input[type="checkbox"]:not(#selectAll)').forEach(checkbox => {
+        checkbox.addEventListener('change', updateDeleteButton);
+    });
+    
+    document.getElementById('searchInput').addEventListener('keyup', searchFiles);
+});
+</script>
+{% endblock %}

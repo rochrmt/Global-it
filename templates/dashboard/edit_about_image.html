@@ -1,0 +1,158 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Modifier l'Image About - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-edit text-warning"></i> Modifier l'Image About
+        </h1>
+        <a href="{% url 'dashboard:about_manager' %}" class="btn btn-secondary btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-arrow-left"></i>
+            </span>
+            <span class="text">Retour</span>
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Modifier: {{ about_image.titre }}</h6>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="titre">Titre *</label>
+                            <input type="text" class="form-control" id="titre" name="titre" value="{{ about_image.titre }}" required>
+                            <small class="form-text text-muted">Le titre de l'image qui apparaîtra dans la section about</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3">{{ about_image.description }}</textarea>
+                            <small class="form-text text-muted">Description optionnelle qui apparaîtra sous le titre</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="ordre">Ordre d'affichage *</label>
+                            <input type="number" class="form-control" id="ordre" name="ordre" value="{{ about_image.ordre }}" min="0" required>
+                            <small class="form-text text-muted">L'ordre dans lequel cette image apparaîtra (0 = première)</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Image actuelle</label>
+                            {% if about_image.image %}
+                                <div class="mb-2">
+                                    <img src="{{ about_image.image.url }}" alt="{{ about_image.titre }}" 
+                                         style="width: 200px; height: 150px; object-fit: cover; border-radius: 5px;">
+                                </div>
+                            {% else %}
+                                <div class="mb-2" style="width: 200px; height: 150px; background: #f8f9fa; border-radius: 5px; 
+                                            display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-image text-muted"></i>
+                                </div>
+                            {% endif %}
+                            <label for="image">Nouvelle image (optionnel)</label>
+                            <input type="file" class="form-control-file" id="image" name="image" accept="image/*">
+                            <small class="form-text text-muted">Laisser vide pour conserver l'image actuelle. Formats acceptés: JPG, JPEG, PNG, WebP</small>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="est_actif" name="est_actif" {% if about_image.est_actif %}checked{% endif %}>
+                                <label class="custom-control-label" for="est_actif">Activer cette image</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-warning btn-icon-split">
+                                <span class="icon text-white-50">
+                                    <i class="fas fa-save"></i>
+                                </span>
+                                <span class="text">Modifier l'image</span>
+                            </button>
+                            <a href="{% url 'dashboard:about_manager' %}" class="btn btn-secondary">Annuler</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Aperçu</h6>
+                </div>
+                <div class="card-body">
+                    <div id="imagePreview" class="text-center">
+                        {% if about_image.image %}
+                            <img src="{{ about_image.image.url }}" alt="{{ about_image.titre }}" 
+                                 style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                        {% else %}
+                            <div style="width: 100%; height: 200px; background: #f8f9fa; border-radius: 10px; 
+                                        display: flex; align-items: center; justify-content: center; 
+                                        flex-direction: column;">
+                                <i class="fas fa-image text-muted" style="font-size: 48px;"></i>
+                                <small class="text-muted mt-2">Aucune image</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Conseils</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Utilisez des images de haute qualité</li>
+                        <li><i class="fas fa-check text-success"></i> Dimensions recommandées: 800x600</li>
+                        <li><i class="fas fa-check text-success"></i> Formats optimaux: JPG ou WebP</li>
+                        <li><i class="fas fa-check text-success"></i> Taille maximale: 5MB</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.innerHTML = `
+                <img src="${e.target.result}" alt="Aperçu" 
+                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                <small class="text-muted d-block mt-2">${file.name}</small>
+            `;
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

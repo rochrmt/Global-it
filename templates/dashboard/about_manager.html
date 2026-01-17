@@ -1,0 +1,186 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Images About - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-images text-info"></i> Gestion des Images About
+        </h1>
+        <div>
+            <a href="{% url 'dashboard:sync_dashboard' %}" class="btn btn-warning btn-icon-split me-2">
+                <span class="icon text-white-50">
+                    <i class="fas fa-sync"></i>
+                </span>
+                <span class="text">Synchroniser</span>
+            </a>
+            <a href="{% url 'dashboard:add_about_image' %}" class="btn btn-primary btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span class="text">Ajouter une image</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Images
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_images }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-images fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Images Actives
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_images }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DataTable -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Images de la Section About</h6>
+        </div>
+        <div class="card-body">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Titre</th>
+                            <th>Description</th>
+                            <th>Ordre</th>
+                            <th>Statut</th>
+                            <th>Date de création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for image in about_images %}
+                        <tr>
+                            <td>
+                                {% if image.image %}
+                                    <img src="{{ image.image.url }}" alt="{{ image.titre }}" 
+                                         style="width: 80px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                {% else %}
+                                    <div style="width: 80px; height: 60px; background: #f8f9fa; border-radius: 5px; 
+                                                display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ image.titre }}</strong>
+                            </td>
+                            <td>
+                                {% if image.description %}
+                                    {{ image.description|truncatewords:10 }}
+                                {% else %}
+                                    <span class="text-muted">Pas de description</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge badge-secondary">{{ image.ordre }}</span>
+                            </td>
+                            <td>
+                                {% if image.est_actif %}
+                                    <span class="badge badge-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ image.date_creation|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'dashboard:edit_about_image' image.id %}" 
+                                       class="btn btn-warning btn-sm" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'dashboard:toggle_about_status' image.id %}" 
+                                          style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-info btn-sm" title="{{ image.est_actif|yesno:'Désactiver,Activer' }}">
+                                            <i class="fas fa-{{ image.est_actif|yesno:'eye-slash,eye' }}"></i>
+                                        </button>
+                                    </form>
+                                    <form method="post" action="{% url 'dashboard:delete_about_image' image.id %}" 
+                                          style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette image ?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                <i class="fas fa-images fa-3x mb-3"></i>
+                                <p>Aucune image about disponible</p>
+                                <a href="{% url 'dashboard:add_about_image' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Ajouter une image
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#dataTable').DataTable({
+        "language": {
+            "url": "{% static 'vendor/datatables/french.json' %}"
+        },
+        "order": [[3, "asc"]] // Trier par ordre par défaut
+    });
+});
+</script>
+{% endblock %}

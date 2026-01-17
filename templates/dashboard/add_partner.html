@@ -1,0 +1,198 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter un Partenaire - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-handshake text-info"></i> Ajouter un Partenaire
+        </h1>
+        <div>
+            <a href="{% url 'dashboard:partner_manager' %}" class="btn btn-secondary btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-arrow-left"></i>
+                </span>
+                <span class="text">Retour à la liste</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations du partenaire</h6>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.nom.id_for_label }}">Nom du partenaire <span class="text-danger">*</span></label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.nom.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Le nom du partenaire qui sera affiché sur le site.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.site_web.id_for_label }}">Site Web</label>
+                            {{ form.site_web }}
+                            {% if form.site_web.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.site_web.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">URL du site web du partenaire (ex: https://www.example.com).</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.logo.id_for_label }}">Logo</label>
+                            {{ form.logo }}
+                            {% if form.logo.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.logo.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Formats acceptés : JPG, JPEG, PNG, WEBP, SVG. Taille maximale recommandée : 500KB.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Description optionnelle du partenaire.</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.ordre.id_for_label }}">Ordre d'affichage</label>
+                                    {{ form.ordre }}
+                                    {% if form.ordre.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.ordre.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Ordre d'affichage sur la page (0 = premier).</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.est_actif.id_for_label }}">Statut</label>
+                                    <div class="form-check">
+                                        {{ form.est_actif }}
+                                        <label class="form-check-label" for="{{ form.est_actif.id_for_label }}">
+                                            Afficher ce partenaire sur le site
+                                        </label>
+                                    </div>
+                                    {% if form.est_actif.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.est_actif.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-primary btn-icon-split">
+                                <span class="icon text-white-50">
+                                    <i class="fas fa-save"></i>
+                                </span>
+                                <span class="text">Enregistrer le partenaire</span>
+                            </button>
+                            <a href="{% url 'dashboard:partner_manager' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Aperçu</h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">L'aperçu du partenaire apparaîtra ici une fois le logo téléchargé.</p>
+                    <div id="logo-preview" class="text-center" style="display: none;">
+                        <img id="preview-image" src="#" alt="Aperçu du logo" class="img-fluid rounded">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Conseils</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Utilisez des logos de haute qualité</li>
+                        <li><i class="fas fa-check text-success"></i> Formats recommandés : PNG ou SVG</li>
+                        <li><i class="fas fa-check text-success"></i> Taille optimale : 200x200px</li>
+                        <li><i class="fas fa-check text-success"></i> Poids maximum : 500KB</li>
+                        <li><i class="fas fa-info text-info"></i> L'ordre détermine l'affichage sur la page</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('{{ form.logo.id_for_label }}').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const preview = document.getElementById('logo-preview');
+    const previewImage = document.getElementById('preview-image');
+    
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    } else {
+        preview.style.display = 'none';
+    }
+});
+</script>
+{% endblock %}

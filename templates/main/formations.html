@@ -1,0 +1,427 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Nos Formations - {{ site_config.nom_site }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Styles d'impression minimalistes - UNIQUEMENT PROGRAMMES */
+@media print {
+    /* Masquer absolument tout sauf le contenu principal des formations */
+    header, footer, nav, .navbar, .navbar-nav, .nav-item, .nav-link,
+    .btn, .button, .formation-actions, .page-header, 
+    .bg-light.py-4, .filters-section, .filter-form,
+    .py-5.bg-light, .cta-section, .formation-badges, .badge,
+    .formation-image, .formation-icon-placeholder, .display-5, 
+    .lead, h1, .alert, .alert-info, .no-print,
+    .col-md-6 .formation-image, .formation-header,
+    .site-header, .main-navigation, .navigation, .menu,
+    .sidebar, .widget, .advertisement {
+        display: none !important;
+    }
+    
+    /* Page optimisée */
+    @page {
+        margin: 10mm;
+        size: A4;
+    }
+    
+    body {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 11pt !important;
+        line-height: 1.3 !important;
+        font-family: Arial, sans-serif !important;
+        background: white !important;
+        color: black !important;
+    }
+    
+    /* Container principal contenu principale dans l'index du premier code et dans la partie front du second  */
+    .container {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Section formations uniquement */
+    .py-5 {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Grille de formations */
+    .row.g-4 {
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    /* Chaque formation - mise en page détaillée */
+    .col-md-6, .col-lg-4 {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 0 20px 0 !important;
+        padding: 15px !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        border: 1px solid #ccc !important;
+        border-radius: 4px !important;
+        background: #f9f9f9 !important;
+    }
+    
+    /* Carte de formation simplifiée */
+    .formation-card {
+        border: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: white !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+    }
+    
+    /* Titre de la formation */
+    .formation-card h3, .formation-card h4, .formation-content h4 {
+        font-size: 16pt !important;
+        font-weight: bold !important;
+        margin: 0 0 12px 0 !important;
+        padding: 0 !important;
+        color: #000 !important;
+        line-height: 1.3 !important;
+        display: block !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+    
+    /* Description détaillée */
+    .formation-content p {
+        font-size: 12pt !important;
+        color: #222 !important;
+        margin: 8px 0 !important;
+        padding: 0 !important;
+        line-height: 1.6 !important;
+        max-height: none !important;
+        overflow: visible !important;
+        text-align: justify !important;
+    }
+    
+    /* Détails (durée, prix, niveau) */
+    .formation-details {
+        margin: 12px 0 !important;
+        padding: 10px !important;
+        background: #fff !important;
+        border: 1px solid #ddd !important;
+        border-radius: 3px !important;
+    }
+    
+    .formation-details .row {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .detail-item {
+        display: inline-block !important;
+        margin-right: 20px !important;
+        padding: 5px 10px !important;
+        font-size: 11pt !important;
+        background: #f0f0f0 !important;
+        border: 1px solid #bbb !important;
+        border-radius: 2px !important;
+    }
+    
+    .detail-item strong {
+        font-weight: bold !important;
+        color: #000 !important;
+        font-size: 11pt !important;
+    }
+    
+    /* Masquer icônes et labels */
+    .detail-item i, .detail-item small {
+        display: none !important;
+    }
+    
+    /* Supprimer animations */
+    [data-aos], .aos-init {
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    
+    /* Espacements réduits */
+    .mb-3, .mb-4, .mb-2, .mb-1, .mb-0,
+    .mt-3, .mt-4, .mt-2, .mt-1, .mt-0,
+    .my-3, .my-4, .my-2, .my-1, .my-0,
+    .py-5, .py-4, .py-3, .py-2, .py-1, .py-0,
+    .px-3, .px-4, .px-2, .px-1, .px-0,
+    .p-3, .p-4, .p-2, .p-1, .p-0,
+    .g-4, .row.g-4 {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    
+    .h-100, .rounded {
+        height: auto !important;
+        border-radius: 0 !important;
+    }
+    
+    /* Masquer le bouton d'impression */
+    .btn-outline-secondary {
+        display: none !important;
+    }
+    
+    /* Amélioration de la lisibilité générale */
+    * {
+        print-color-adjust: exact !important;
+        -webkit-print-color-adjust: exact !important;
+    }
+    
+    /* Espacement entre formations */
+    .formation-card {
+        margin-bottom: 25px !important;
+        padding-bottom: 20px !important;
+        border-bottom: 2px solid #000 !important;
+    }
+    
+    /* Gestion des sauts de page pour 2 pages par formation */
+    .print-page-1 {
+        page-break-after: always !important;
+        min-height: 90vh !important;
+        padding: 20px !important;
+        margin-bottom: 30px !important;
+    }
+    
+    .print-page-2 {
+        page-break-before: auto !important;
+        min-height: 90vh !important;
+        padding: 20px !important;
+        margin-top: 30px !important;
+    }
+    
+    /* Styles pour Objectif et Description */
+    .objectif-section, .description-section {
+        margin-bottom: 30px !important;
+        padding: 15px !important;
+        background: #f9f9f9 !important;
+        border-left: 4px solid #dc3545 !important;
+        page-break-inside: avoid !important;
+    }
+    
+    .objectif-section h5, .description-section h5 {
+        font-size: 16pt !important;
+        font-weight: bold !important;
+        color: #dc3545 !important;
+        margin-bottom: 15px !important;
+        text-transform: uppercase !important;
+    }
+    
+    .objectif-section p, .description-section p {
+        font-size: 13pt !important;
+        line-height: 1.7 !important;
+        color: #333 !important;
+        margin: 0 !important;
+        text-align: justify !important;
+    }
+    
+    /* Style pour Programme Détaillé */
+    .programme-section {
+        padding: 20px !important;
+        background: #ffffff !important;
+        border: 1px solid #ddd !important;
+        page-break-inside: avoid !important;
+    }
+    
+    .programme-section h5 {
+        font-size: 18pt !important;
+        font-weight: bold !important;
+        color: #dc3545 !important;
+        margin-bottom: 20px !important;
+        text-align: center !important;
+        text-transform: uppercase !important;
+        border-bottom: 2px solid #dc3545 !important;
+        padding-bottom: 10px !important;
+    }
+    
+    .programme-content {
+        font-size: 12pt !important;
+        line-height: 1.6 !important;
+        color: #000 !important;
+    }
+    
+    .programme-content p {
+        margin: 10px 0 !important;
+        padding: 5px 0 !important;
+        border-bottom: 1px dotted #ccc !important;
+        page-break-inside: avoid !important;
+    }
+    
+    /* Masquer les boutons d'action en impression */
+    .formation-actions {
+        display: none !important;
+    }
+    
+    /* Masquer le header de la page en impression */
+    .page-header {
+        display: none !important;
+    }
+    
+    /* S'assurer que chaque formation commence sur une nouvelle page */
+    .formation-card {
+        page-break-before: always !important;
+        page-break-after: always !important;
+    }
+    
+    /* Première formation ne commence pas avec un saut de page */
+    .formation-card:first-child {
+        page-break-before: auto !important;
+    }
+}
+</style>
+{% endblock %}
+
+
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header bg-primary-custom text-white" style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold text-white" data-aos="fade-right">Nos Formations Professionnelles</h1>
+                <p class="lead text-white-50" data-aos="fade-right" data-aos-delay="100">
+                    Développez vos compétences avec nos formations certifiantes et adaptées aux besoins du marché
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Filters -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-0 text-dark">Filtrer les formations :</h5>
+            </div>
+            <div class="col-md-6">
+                <form method="get" class="row g-2">
+                    <div class="col-6">
+                        <select name="categorie" class="form-select text-dark">
+                            <option value="">Toutes catégories</option>
+                            <option value="programmation">Programmation</option>
+                            <option value="reseaux">Réseaux</option>
+                            <option value="securite">Sécurité</option>
+                            <option value="cloud">Cloud Computing</option>
+                            <option value="data">Data Science</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <select name="niveau" class="form-select text-dark">
+                            <option value="">Tous niveaux</option>
+                            <option value="debutant">Débutant</option>
+                            <option value="intermediaire">Intermédiaire</option>
+                            <option value="avance">Avancé</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
+<!-- Formations Grid -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            {% for formation in formations %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                <div class="formation-card h-100">
+                    <div class="formation-image mb-3">
+                        {% if formation.image %}
+                            <img src="{{ formation.image.url }}" alt="{{ formation.titre }}" class="img-fluid rounded" style="height: 200px; object-fit: cover; width: 100%;">
+                        {% else %}
+                            <div class="formation-icon-placeholder rounded d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                                <i class="fas fa-graduation-cap" style="font-size: 60px;"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="formation-header">
+                        <div class="formation-badges">
+                            <span class="badge bg-danger">{{ formation.get_categorie_display }}</span>
+                            <span class="badge bg-secondary">{{ formation.get_niveau_display }}</span>
+                        </div>
+                        {% if formation.disponible %}
+                            <span class="badge bg-success">Disponible</span>
+                        {% else %}
+                            <span class="badge bg-warning">Sur demande</span>
+                        {% endif %}
+                    </div>
+                    <div class="formation-content">
+                        <h4 class="mb-3 text-dark">{{ formation.titre }}</h4>
+                        <div class="formation-details mb-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="detail-item">
+                                        <i class="fas fa-clock text-danger"></i>
+                                        <small class="d-block text-dark">Durée</small>
+                                        <strong>{{ formation.duree }}</strong>
+                                    </div>
+                                </div>
+                             <!---->   <div class="col-6">
+                                    <div class="detail-item">
+                                        <i class="fas  text-danger"></i>
+                                      <!--  <small class="d-block text-dark">Prix</small>
+                                        <strong>{{ formation.prix }} FCFA</strong>  -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Section Objectif et Description - Page 1 -->
+                        <div class="print-page-1">
+                            <div class="objectif-section mb-4">
+                                <h5 class="text-danger mb-2"><i class="fas fa-target me-2"></i>Objectif</h5>
+                                <p class="text-dark">{{ formation.objectif|default:"Acquérir les compétences nécessaires pour maîtriser les technologies et outils utilisés dans le domaine de la formation."|truncatewords:30 }}</p>
+                            </div>
+                            
+                            <div class="description-section mb-4">
+                                <h5 class="text-danger mb-2"><i class="fas fa-info-circle me-2"></i>Description</h5>
+                                <p class="text-dark">{{ formation.description|truncatewords:40 }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Section Programme Détaillé - Page 2 -->
+                        <div class="print-page-2">
+                            <div class="programme-section">
+                                <h5 class="text-danger mb-3"><i class="fas fa-list me-2"></i>Programme Détaillé</h5>
+                                <div class="programme-content">
+                                    {{ formation.programme_detaille|default:"<p>• Introduction aux concepts fondamentaux</p><p>• Apprentissage pratique avec des exercices</p><p>• Mise en situation réelle</p><p>• Évaluation et certification</p>"|safe }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="formation-actions no-print">
+                            <a href="{% url 'formation_detail' formation.pk %}" class="btn btn-danger btn-sm w-100 mb-2">
+                                <i class="fas fa-info-circle me-1"></i>Détails de la formation
+                            </a>
+                            <a href="{% url 'contact' %}" class="btn btn-outline-danger btn-sm w-100">
+                                <i class="fas fa-calendar me-1"></i>Planifier une session
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucune formation disponible pour le moment correspondant à vos critères.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+
+{% endblock %}

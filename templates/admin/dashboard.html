@@ -1,0 +1,177 @@
+{% extends 'admin/base_site.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord - {{ site_config.nom_site }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Accueil</a>
+    &rsaquo; Tableau de bord
+</div>
+{% endblock %}
+
+{% block content %}
+<div id="content" class="colMS">
+    <h1>Tableau de bord {{ site_config.nom_site }}</h1>
+    
+    <div class="module">
+        <h2>Statistiques générales</h2>
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_services }}</div>
+                <div class="stat-label">Services au total</div>
+                <div class="stat-detail">{{ stats.active_services }} actifs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_formations }}</div>
+                <div class="stat-label">Formations au total</div>
+                <div class="stat-detail">{{ stats.available_formations }} disponibles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ stats.total_contacts }}</div>
+                <div class="stat-label">Contacts reçus</div>
+                <div class="stat-detail">{{ stats.unread_contacts }} non lus</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="module">
+        <h2>Contacts récents</h2>
+        {% if recent_contacts %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Nom</th>
+                    <th>Email</th>
+                    <th>Sujet</th>
+                    <th>Statut</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contact in recent_contacts %}
+                <tr>
+                    <td>{{ contact.date_creation|date:"d/m/Y H:i" }}</td>
+                    <td>{{ contact.nom }}</td>
+                    <td>{{ contact.email }}</td>
+                    <td>{{ contact.sujet|truncatechars:50 }}</td>
+                    <td>
+                        {% if contact.est_traite %}
+                            <span class="label label-success">Traité</span>
+                        {% else %}
+                            <span class="label label-warning">Non traité</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Aucun contact récent.</p>
+        {% endif %}
+    </div>
+    
+    <div class="module">
+        <h2>Répartition des services par catégorie</h2>
+        <div class="chart-container">
+            <table class="table">
+                {% for category, count in services_by_category.items %}
+                <tr>
+                    <td>{{ category }}</td>
+                    <td>{{ count }} service{{ count|pluralize }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    
+    <div class="module">
+        <h2>Répartition des formations par niveau</h2>
+        <div class="chart-container">
+            <table class="table">
+                {% for level, count in formations_by_level.items %}
+                <tr>
+                    <td>{{ level }}</td>
+                    <td>{{ count }} formation{{ count|pluralize }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    
+    <div class="module">
+        <h2>Actions rapides</h2>
+        <div class="quick-actions">
+            <a href="{% url 'admin:system_info' %}" class="button">Informations système</a>
+            <a href="{% url 'admin:contact_management' %}" class="button">Gérer les contacts</a>
+            <a href="{% url 'admin:quick_actions' %}" class="button">Actions rapides</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.dashboard-stats {
+    display: flex;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    flex: 1;
+}
+
+.stat-number {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 10px;
+}
+
+.stat-label {
+    font-size: 1.1em;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+.stat-detail {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+.quick-actions {
+    margin: 20px 0;
+}
+
+.quick-actions .button {
+    display: inline-block;
+    margin-right: 10px;
+    margin-bottom: 10px;
+}
+
+.chart-container {
+    margin: 20px 0;
+}
+
+.label {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.label-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.label-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+</style>
+{% endblock %}

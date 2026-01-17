@@ -1,0 +1,184 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ formation.titre }} - {{ site_config.nom_site }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header bg-primary-custom text-white " style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb" data-aos="fade-right">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'formations' %}" class="text-white">Formations</a></li>
+                        <li class="breadcrumb-item active text-white-50">{{ formation.titre }}</li>
+                    </ol>
+                </nav>
+                <h1 class="display-5 fw-bold text-white" data-aos="fade-right" data-aos-delay="100">{{ formation.titre }}</h1>
+                <p class="lead text-white" data-aos="fade-right" data-aos-delay="200">{{ formation.description|truncatewords:20 }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Formation Detail -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8" data-aos="fade-right">
+                <div class="formation-content">
+                    <div class="formation-badges mb-3">
+                        <span class="badge bg-primary-custom fs-6">{{ formation.get_categorie_display }}</span>
+                        <span class="badge bg-secondary fs-6">{{ formation.get_niveau_display }}</span>
+                        {% if formation.disponible %}
+                            <span class="badge bg-success fs-6">Disponible</span>
+                        {% else %}
+                            <span class="badge bg-warning fs-6">Sur demande</span>
+                        {% endif %}
+                    </div>
+                    
+                    {% if formation.image %}
+                    <div class="formation-main-image mb-4">
+                        <img src="{{ formation.image.url }}" alt="{{ formation.titre }}" class="img-fluid rounded shadow">
+                    </div>
+                    {% else %}
+                    <div class="formation-main-image mb-4">
+                        <div class="formation-icon-placeholder-large rounded d-flex align-items-center justify-content-center" style="height: 300px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                            <i class="fas fa-graduation-cap" style="font-size: 100px;"></i>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="formation-description mb-4">
+                        <h3 class="mb-3">Description</h3>
+                        {{ formation.description|linebreaks }}
+                    </div>
+                    
+                    <div class="formation-objectifs mb-4">
+                        <h3 class="mb-3">Objectifs pédagogiques</h3>
+                        <div class="objectifs-list">
+                            {{ formation.objectifs|linebreaks }}
+                        </div>
+                    </div>
+                    
+                    <div class="formation-programme mb-4">
+                        <h3 class="mb-3">Programme détaillé</h3>
+                        <div class="programme-content">
+                            {{ formation.programme|linebreaks }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- CTA -->
+                <div class="formation-cta mt-5 p-4 bg-light rounded">
+                    <h4 class="mb-3">Prêt à vous former ?</h4>
+                    <p class="text-muted mb-4">Contactez-nous pour planifier votre formation ou obtenir plus d'informations.</p>
+                    <div class="d-flex gap-3">
+                        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">
+                            <i class="fas fa-calendar me-2"></i>Planifier une session
+                        </a>
+                        <button class="btn btn-outline-primary btn-lg" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Imprimer la fiche
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4" data-aos="fade-left">
+                <div class="formation-sidebar">
+                    <!-- Formation Info -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary-custom text-white">
+                            <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Informations</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="info-item mb-3">
+                                <h6><i class="fas fa-clock text-primary-custom me-2"></i>Durée</h6>
+                                <p>{{ formation.duree }}</p>
+                            </div>
+                           <!-- <div class="info-item mb-3">
+                                <h6><i class="fas fa-euro-sign text-primary-custom me-2"></i>Prix</h6>
+                                <p class="h5 text-primary-custom">{{ formation.prix }} </p>
+                            </div>   -->
+                        
+                            <div class="info-item mb-3">
+                                <h6><i class="fas fa-signal text-primary-custom me-2"></i>Niveau</h6>
+                                <p>{{ formation.get_niveau_display }}</p>
+                            </div>
+                            <div class="info-item">
+                                <h6><i class="fas fa-tag text-primary-custom me-2"></i>Catégorie</h6>
+                                <p>{{ formation.get_categorie_display }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Info -->
+                    <div class="card">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0"><i class="fas fa-phone me-2"></i>Contact</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2"><i class="fas fa-envelope text-primary-custom me-2"></i>info@global-it.ca</p>
+                            <p class="mb-2"><i class="fas fa-phone text-primary-custom me-2"></i>+236 72 77 08 08</p>
+                            <p class="mb-0"><i class="fas fa-clock text-primary-custom me-2"></i>Lun-Ven: 8h-18h</p>
+                            <hr>
+                            <p class="text-muted small">
+                                N'hésitez pas à nous contacter pour toute question sur cette formation ou pour planifier une session personnalisée.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Formations -->
+{% if autres_formations %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h3 class="text-center mb-5" data-aos="fade-up">Autres formations qui pourraient vous intéresser</h3>
+        <div class="row g-4">
+            {% for formation in autres_formations %}
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                <div class="formation-card h-100">
+                    <div class="formation-header">
+                        <div class="formation-badges">
+                            <span class="badge bg-primary-custom">{{ formation.get_categorie_display }}</span>
+                            <span class="badge bg-secondary">{{ formation.get_niveau_display }}</span>
+                        </div>
+                        {% if formation.disponible %}
+                            <span class="badge bg-success">Disponible</span>
+                        {% else %}
+                            <span class="badge bg-warning">Sur demande</span>
+                        {% endif %}
+                    </div>
+                    <div class="formation-content">
+                        <h5 class="mb-3">{{ formation.titre }}</h5>
+                        <div class="formation-details mb-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <small class="d-block text-muted">Durée</small>
+                                    <strong>{{ formation.duree }}</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="d-block text-muted">Prix</small>
+                                    <strong>{{ formation.prix }} €</strong>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted mb-3">{{ formation.description|truncatewords:15 }}</p>
+                        <a href="{% url 'formation_detail' formation.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                            Voir la formation <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

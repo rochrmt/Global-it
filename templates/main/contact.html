@@ -1,0 +1,145 @@
+{% extends 'main/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}Contact - {{ site_config.nom_site }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header bg-primary-custom text-white" style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold text-white" data-aos="fade-right">Contactez-nous</h1>
+                <p class="lead text-white-50" data-aos="fade-right" data-aos-delay="100">
+                    Prêt à transformer votre entreprise ? Parlons de votre projet.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Contact Form -->
+            <div class="col-lg-8" data-aos="fade-right">
+                <div class="contact-form-wrapper">
+                    <h3 class="mb-4 text-dark">Envoyez-nous un message</h3>
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        <button type="submit" class="btn btn-danger btn-lg px-4">
+                            <i class="fas fa-paper-plane me-2"></i>Envoyer le message
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Contact Info -->
+            <div class="col-lg-4" data-aos="fade-left">
+                <div class="contact-info-wrapper">
+                    <h4 class="mb-4 text-dark">Nos coordonnées</h4>
+                    
+                    <div class="contact-item mb-4">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h6 class="text-dark">Adresse</h6>
+                            <p class="text-dark">123 Rue de l'église Chritianisme Benz Vi <br>Bangui , RCA</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item mb-4">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone text-danger"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h6 class="text-dark">Téléphone</h6>
+                            <p class="text-dark">+236 72 77 08 08</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item mb-4">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope text-danger"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h6 class="text-dark">Email</h6>
+                            <p class="text-dark">info@global-it.ca</p>
+                        </div>
+                    </div>
+                    
+                    <div class="contact-item mb-4">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock text-danger"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h6 class="text-dark">Horaires</h6>
+                            <p class="text-dark">Lundi - Vendredi<br>8h00 - 18h00</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Social Links -->
+                    <div class="social-links mt-4">
+                        <h6 class="mb-3 text-dark">Suivez-nous</h6>
+                        <a href="#" class="btn btn-outline-danger btn-sm me-2">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-danger btn-sm me-2">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://www.facebook.com/profile.php?id=100089327130968&mibextid=wwXIfr&rdid=3F1ZwsTebMDW5L24&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1A5KJGZH1f%2F%3Fmibextid%3DwwXIfr#" class="btn btn-outline-danger btn-sm">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Map Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12" data-aos="fade-up">
+                <div class="map-wrapper">
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15925.456237866536!2d18.558611!3d4.361389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNMKwMjEnNDEuMCJOIDE4wrAzMyczMS4wIkU!5e0!3m2!1sfr!2s!4v1640991208124!5m2!1sfr!2s" 
+                        width="100%" 
+                        height="400" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary-custom text-white">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h3 class="display-6 fw-bold text-white mb-3">Besoin d'une réponse rapide ?</h3>
+                <p class="lead text-white-50 mb-4">
+                    Appelez-nous maintenant ou envoyez-nous un email. Nous vous répondrons dans les plus brefs délais.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="tel:+23672770808" class="btn btn-light-custom btn-lg">
+                        <i class="fas fa-phone me-2"></i>+236 72 77 08 08
+                    </a>
+                    <a href="mailto:contact@globaltit.com" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-envelope me-2"></i>info@global-it.ca
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

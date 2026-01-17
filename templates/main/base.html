@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ site_config.meta_title }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ site_config.meta_description }}{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}services informatiques, formations, consulting IT, développement, sécurité, cloud{% endblock %}">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=4.0">
+    <link rel="stylesheet" href="{% static 'css/custom-theme.css' %}?v=4.0">
+    <link rel="stylesheet" href="{% static 'css/logo-styles.css' %}?v=4.0">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'home' %}">
+                {% if site_config.logo %}
+                    <img src="{{ site_config.logo.url }}" alt="{{ site_config.nom_site }}" class="me-2 logo-no-background">
+                {% else %}
+                    <i class="fas fa-globe text-primary-custom me-2"></i>
+                {% endif %}
+                <span class="brand-text">{{ site_config.nom_site }}</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'services' %}">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'formations' %}">Formations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'about' %}">À propos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'partners' %}">Nos Partenaires</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-primary ms-2 px-3" href="{% url 'contact' %}">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-5 pt-4">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer moderne et professionnel -->
+    <footer class="footer-modern py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Section Logo et Description -->
+                <div class="col-lg-4 col-md-6 mb-5">
+                    <div class="footer-brand">
+                        <h4 class="footer-logo mb-3">
+                            {% if site_config.logo %}
+                                <img src="{{ site_config.logo.url }}" alt="{{ site_config.nom_site }}" height="50" class="me-2">
+                            {% else %}
+                                <i class="fas fa-globe text-accent-red me-2"></i>
+                            {% endif %}
+                            <span class="brand-text">{{ site_config.nom_site }}</span>
+                        </h4>
+                        <p class="footer-description">
+                            Votre partenaire technologique de confiance. Nous transformons vos défis IT en opportunités d'innovation grâce à des solutions sur mesure et des formations d'excellence.
+                        </p>
+                        <div class="footer-social">
+                            {% if site_config.linkedin_url %}
+                                <a href="{{ site_config.linkedin_url }}" class="social-link" target="_blank" title="LinkedIn">
+                                    <i class="fab fa-linkedin"></i>
+                                </a>
+                            {% endif %}
+                            {% if site_config.twitter_url %}
+                                <a href="{{ site_config.twitter_url }}" class="social-link" target="_blank" title="Twitter">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                            {% endif %}
+                            <a href="https://www.facebook.com/profile.php?id=100089327130968&mibextid=wwXIfr&rdid=3F1ZwsTebMDW5L24&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1A5KJGZH1f%2F%3Fmibextid%3DwwXIfr#" class="social-link" target="_blank" title="Facebook">
+                                <i class="fab fa-facebook"></i>
+                            </a>
+                            {% if site_config.instagram_url %}
+                                <a href="{{ site_config.instagram_url }}" class="social-link" target="_blank" title="Instagram">
+                                    <i class="fab fa-instagram"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Services pour examiner les services de l'enreprise-->
+                <div class="col-lg-2 col-md-6 mb-5">
+                    <div class="footer-section">
+                        <h6 class="footer-title">Nos Services</h6>
+                        <ul class="footer-links">
+                            <li><a href="{% url 'services' %}" class="footer-link">Développement Web & Mobile</a></li>
+                            <li><a href="{% url 'services' %}" class="footer-link">Infrastructure Cloud</a></li>
+                            <li><a href="{% url 'services' %}" class="footer-link">Cybersécurité</a></li>
+                            <li><a href="{% url 'services' %}" class="footer-link">Consulting IT</a></li>
+                            <li><a href="{% url 'services' %}" class="footer-link">Support Technique</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Section Formations -->
+                <div class="col-lg-2 col-md-6 mb-5">
+                    <div class="footer-section">
+                        <h6 class="footer-title">Nos Formations</h6>
+                        <ul class="footer-links">
+                            <li><a href="{% url 'formations' %}" class="footer-link">Développement Logiciel</a></li>
+                            <li><a href="{% url 'formations' %}" class="footer-link">Réseaux & Sécurité</a></li>
+                            <li><a href="{% url 'formations' %}" class="footer-link">Cloud Computing</a></li>
+                            <li><a href="{% url 'formations' %}" class="footer-link">Data Science</a></li>
+                            <li><a href="{% url 'formations' %}" class="footer-link">IA & Machine Learning</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Section Contact -->
+                <div class="col-lg-4 col-md-6 mb-5">
+                    <div class="footer-section">
+                        <h6 class="footer-title">Contactez-nous</h6>
+                        <div class="footer-contact">
+                            <div class="contact-item">
+                                <i class="fas fa-envelope contact-icon"></i>
+                                <div class="contact-info">
+                                    <span class="contact-label">Email</span>
+                                    <a href="mailto:contact@global-it.com" class="contact-link">info@global-it.ca</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-phone contact-icon"></i>
+                                <div class="contact-info">
+                                    <span class="contact-label">Téléphone</span>
+                                    <a href="tel:+23672770808" class="contact-link">+236 72 77 08 08</a>
+                                </div>
+                            </div>
+                            <div class="contact-item">
+                                <i class="fas fa-map-marker-alt contact-icon"></i>
+                                <div class="contact-info">
+                                    <span class="contact-label">Adresse</span>
+                                    <span class="contact-text">123 Rue de l'église Chritianisme Benz Vi<br>Bangui, RCA</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="footer-cta mt-4">
+                            <a href="{% url 'contact' %}" class="btn btn-footer">Demander un devis</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <p class="footer-copyright">
+                            &copy; 2025 {{ site_config.nom_site }}. Tous droits réservés.
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="footer-legal">
+                            <a href="#" class="footer-legal-link">Mentions légales</a>
+                            <span class="separator">|</span>
+                            <a href="#" class="footer-legal-link">Politique de confidentialité</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="btn btn-primary rounded-circle position-fixed" style="bottom: 20px; right: 20px; display: none;">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AOS Animation -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+    </script>
+</body>
+</html>

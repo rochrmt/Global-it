@@ -1,0 +1,262 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% load dashboard_tags %}
+
+{% block title %}Journal d'Activité - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-header">
+                <h1><i class="fas fa-history"></i> Journal d'Activité</h1>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard:home' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Journal d'Activité</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtres et Actions -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="action" class="form-label">Action</label>
+                    <select name="action" id="action" class="form-select form-select-sm">
+                        <option value="">Toutes les actions</option>
+                        <option value="create" {% if current_filters.action == 'create' %}selected{% endif %}>Création</option>
+                        <option value="update" {% if current_filters.action == 'update' %}selected{% endif %}>Modification</option>
+                        <option value="delete" {% if current_filters.action == 'delete' %}selected{% endif %}>Suppression</option>
+                        <option value="toggle" {% if current_filters.action == 'toggle' %}selected{% endif %}>Activation/Désactivation</option>
+                        <option value="login" {% if current_filters.action == 'login' %}selected{% endif %}>Connexion</option>
+                        <option value="logout" {% if current_filters.action == 'logout' %}selected{% endif %}>Déconnexion</option>
+                        <option value="upload" {% if current_filters.action == 'upload' %}selected{% endif %}>Upload</option>
+                        <option value="download" {% if current_filters.action == 'download' %}selected{% endif %}>Téléchargement</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label for="object_type" class="form-label">Type d'objet</label>
+                    <select name="object_type" id="object_type" class="form-select form-select-sm">
+                        <option value="">Tous les types</option>
+                        <option value="StaticImage" {% if current_filters.object_type == 'StaticImage' %}selected{% endif %}>Image</option>
+                        <option value="User" {% if current_filters.object_type == 'User' %}selected{% endif %}>Utilisateur</option>
+                        <option value="SiteSettings" {% if current_filters.object_type == 'SiteSettings' %}selected{% endif %}>Paramètres</option>
+                        <option value="Service" {% if current_filters.object_type == 'Service' %}selected{% endif %}>Service</option>
+                        <option value="Formation" {% if current_filters.object_type == 'Formation' %}selected{% endif %}>Formation</option>
+                        <option value="TeamMember" {% if current_filters.object_type == 'TeamMember' %}selected{% endif %}>Membre d'équipe</option>
+                        <option value="BlogPost" {% if current_filters.object_type == 'BlogPost' %}selected{% endif %}>Article de blog</option>
+                        <option value="Testimonial" {% if current_filters.object_type == 'Testimonial' %}selected{% endif %}>Témoignage</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button type="submit" class="btn btn-sm btn-primary">
+                            <i class="fas fa-filter"></i> Filtrer
+                        </button>
+                        <a href="{% url 'dashboard:activity_log' %}" class="btn btn-sm btn-secondary">
+                            <i class="fas fa-times"></i> Réinitialiser
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4 text-end">
+            <div class="btn-group" role="group">
+                <!-- Export and clear functions removed - not implemented -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ activities.count }}</h3>
+                    <p>Total activités</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-user-edit"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ stats.create|default:0 }}</h3>
+                    <p>Créations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-edit"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ stats.update|default:0 }}</h3>
+                    <p>Modifications</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-trash"></i>
+                </div>
+                <div class="stats-content">
+                    <h3>{{ stats.delete|default:0 }}</h3>
+                    <p>Suppressions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tableau des activités -->
+    <div class="row">
+        <div class="col-12">
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> Activités récentes</h5>
+                </div>
+                <div class="card-body">
+                    {% if activities %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Date & Heure</th>
+                                        <th>Utilisateur</th>
+                                        <th>Action</th>
+                                        <th>Type d'objet</th>
+                                        <th>Objet</th>
+                                        <th>Description</th>
+                                        <th>Adresse IP</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for activity in activities %}
+                                        <tr>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ activity.timestamp|date:"d/m/Y" }}<br>
+                                                    {{ activity.timestamp|time:"H:i" }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                {% if activity.user %}
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="user-avatar me-2">
+                                                            <i class="fas fa-user"></i>
+                                                        </div>
+                                                        <div>
+                                                            <strong>{{ activity.user.username }}</strong><br>
+                                                            <small class="text-muted">{{ activity.user.email }}</small>
+                                                        </div>
+                                                    </div>
+                                                {% else %}
+                                                    <span class="text-muted">
+                                                        <i class="fas fa-robot me-1"></i>Système
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{{ activity.action|get_action_color }} text-white">
+                                                    <i class="fas {{ activity.action|get_action_icon }} me-1"></i>
+                                                    {{ activity.get_action_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ activity.object_type }}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {% if activity.object_id %}
+                                                        ID: {{ activity.object_id }}
+                                                    {% else %}
+                                                        -
+                                                    {% endif %}
+                                                </small>
+                                            </td>
+                                            <td>
+                                                <small>{{ activity.description|truncate_chars:50 }}</small>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    {{ activity.ip_address|default:"-" }}
+                                                </small>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if activities.has_other_pages %}
+                            <nav aria-label="Pagination" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if activities.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ activities.previous_page_number }}{% if current_filters.action %}&action={{ current_filters.action }}{% endif %}{% if current_filters.object_type %}&object_type={{ current_filters.object_type }}{% endif %}">
+                                                <i class="fas fa-chevron-left"></i> Précédent
+                                            </a>
+                                        </li>
+                                    {% endif %}
+
+                                    {% for num in activities.paginator.page_range %}
+                                        {% if activities.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% elif num > activities.number|add:'-3' and num < activities.number|add:'3' %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}{% if current_filters.action %}&action={{ current_filters.action }}{% endif %}{% if current_filters.object_type %}&object_type={{ current_filters.object_type }}{% endif %}">
+                                                    {{ num }}
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if activities.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ activities.next_page_number }}{% if current_filters.action %}&action={{ current_filters.action }}{% endif %}{% if current_filters.object_type %}&object_type={{ current_filters.object_type }}{% endif %}">
+                                                Suivant <i class="fas fa-chevron-right"></i>
+                                            </a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Aucune activité enregistrée</h5>
+                            <p class="text-muted">Le journal d'activité est vide pour le moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Auto-refresh toutes les 30 secondes
+    setTimeout(function() {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}

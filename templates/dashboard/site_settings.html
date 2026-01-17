@@ -1,0 +1,210 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Paramètres du site - Dashboard{% endblock %}
+{% block page_title %}Paramètres du site{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog text-primary"></i>
+                        Configuration générale du site
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Informations générales -->
+                        <div class="settings-section">
+                            <h4>Informations générales</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="site_name" class="form-label">Nom du site</label>
+                                        <input type="text" class="form-control" id="site_name" name="site_name" 
+                                               value="{{ site_settings.site_name|default:"GlobalTit" }}" required>
+                                        <div class="form-text">Le nom qui apparaîtra dans l'en-tête et le titre du site</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="site_tagline" class="form-label">Slogan du site</label>
+                                        <input type="text" class="form-control" id="site_tagline" name="site_tagline" 
+                                               value="{{ site_settings.site_tagline|default:"Votre partenaire technologique" }}">
+                                        <div class="form-text">Un slogan court qui décrit votre entreprise</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="contact_email" class="form-label">Email de contact</label>
+                                        <input type="email" class="form-control" id="contact_email" name="contact_email" 
+                                               value="{{ site_settings.contact_email|default:"" }}">
+                                        <div class="form-text">L'email principal pour les contacts</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="contact_phone" class="form-label">Téléphone de contact</label>
+                                        <input type="tel" class="form-control" id="contact_phone" name="contact_phone" 
+                                               value="{{ site_settings.contact_phone|default:"" }}">
+                                        <div class="form-text">Le numéro de téléphone principal</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="contact_address" class="form-label">Adresse</label>
+                                <textarea class="form-control" id="contact_address" name="contact_address" 
+                                          rows="3">{{ site_settings.contact_address|default:"" }}</textarea>
+                                <div class="form-text">L'adresse physique de l'entreprise</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Réseaux sociaux -->
+                        <div class="settings-section">
+                            <h4>Réseaux sociaux</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="facebook_url" class="form-label">
+                                            <i class="fab fa-facebook text-primary"></i> Facebook
+                                        </label>
+                                        <input type="url" class="form-control" id="facebook_url" name="facebook_url" 
+                                               value="{{ site_settings.facebook_url|default:"" }}">
+                                        <div class="form-text">URL de votre page Facebook</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="twitter_url" class="form-label">
+                                            <i class="fab fa-twitter text-info"></i> Twitter
+                                        </label>
+                                        <input type="url" class="form-control" id="twitter_url" name="twitter_url" 
+                                               value="{{ site_settings.twitter_url|default:"" }}">
+                                        <div class="form-text">URL de votre profil Twitter</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="linkedin_url" class="form-label">
+                                            <i class="fab fa-linkedin text-primary"></i> LinkedIn
+                                        </label>
+                                        <input type="url" class="form-control" id="linkedin_url" name="linkedin_url" 
+                                               value="{{ site_settings.linkedin_url|default:"" }}">
+                                        <div class="form-text">URL de votre page LinkedIn</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="instagram_url" class="form-label">
+                                            <i class="fab fa-instagram text-danger"></i> Instagram
+                                        </label>
+                                        <input type="url" class="form-control" id="instagram_url" name="instagram_url" 
+                                               value="{{ site_settings.instagram_url|default:"" }}">
+                                        <div class="form-text">URL de votre profil Instagram</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- SEO -->
+                        <div class="settings-section">
+                            <h4>SEO (Référencement)</h4>
+                            
+                            <div class="mb-3">
+                                <label for="meta_description" class="form-label">Description meta</label>
+                                <textarea class="form-control" id="meta_description" name="meta_description" 
+                                          rows="3" maxlength="160">{{ site_settings.meta_description|default:"" }}</textarea>
+                                <div class="form-text">Description du site pour les moteurs de recherche (max 160 caractères)</div>
+                                <small class="text-muted"><span id="meta-count">0</span>/160 caractères</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="meta_keywords" class="form-label">Mots-clés meta</label>
+                                <input type="text" class="form-control" id="meta_keywords" name="meta_keywords" 
+                                       value="{{ site_settings.meta_keywords|default:"" }}">
+                                <div class="form-text">Mots-clés séparés par des virgules pour le référencement</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Apparence -->
+                        <div class="settings-section">
+                            <h4>Apparence</h4>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="primary_color" class="form-label">Couleur principale</label>
+                                        <input type="color" class="form-control form-control-color" id="primary_color" 
+                                               name="primary_color" value="{{ site_settings.primary_color|default:"#3498db" }}">
+                                        <div class="form-text">La couleur principale du site</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="secondary_color" class="form-label">Couleur secondaire</label>
+                                        <input type="color" class="form-control form-control-color" id="secondary_color" 
+                                               name="secondary_color" value="{{ site_settings.secondary_color|default:"#2c3e50" }}">
+                                        <div class="form-text">La couleur secondaire du site</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="favicon" class="form-label">Favicon</label>
+                                <input type="file" class="form-control" id="favicon" name="favicon" accept="image/x-icon,image/vnd.microsoft.icon">
+                                <div class="form-text">L'icône du site (format .ico, taille recommandée: 32x32px)</div>
+                                {% if site_settings.favicon %}
+                                    <div class="mt-2">
+                                        <img src="{{ site_settings.favicon.url }}" alt="Favicon actuel" style="max-width: 32px; max-height: 32px;">
+                                        <small class="text-muted">Favicon actuel</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Bouton de soumission -->
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Compteur de caractères pour la description meta
+document.getElementById('meta_description').addEventListener('input', function() {
+    const count = this.value.length;
+    document.getElementById('meta-count').textContent = count;
+    
+    if (count > 160) {
+        document.getElementById('meta-count').classList.add('text-danger');
+    } else {
+        document.getElementById('meta-count').classList.remove('text-danger');
+    }
+});
+
+// Initialiser le compteur
+document.getElementById('meta-count').textContent = document.getElementById('meta_description').value.length;
+</script>
+{% endblock %}
