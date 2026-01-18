@@ -107,7 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'fr-fr'
-TIME_ZONE = 'Afrique/Bangui'
+TIME_ZONE = 'Africa/Bangui'
 USE_I18N = True
 USE_TZ = True
 
