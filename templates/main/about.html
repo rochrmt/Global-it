@@ -1,5 +1,6 @@
 {% extends 'main/base.html' %}
 {% load static %}
+{% load logo_tags %}
 
 {% block title %}À propos - {{ site_config.nom_site }}{% endblock %}
 
@@ -88,9 +89,8 @@
                             {% endwith %}
                         {% endif %}
                     {% else %}
-                        <div class="about-icon-display d-flex align-items-center justify-content-center rounded shadow" style="height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                            <i class="fas fa-users" style="font-size: 150px;"></i>
-                        </div>
+                        <!-- Fallback vers l'image statique -->
+                        <img src="{% get_about_image_static %}" alt="À propos de {{ site_config.nom_site }}" class="img-fluid rounded shadow" style="height: 400px; object-fit: cover;">
                     {% endif %}
                 </div>
             </div>
