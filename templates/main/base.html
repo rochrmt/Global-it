@@ -1,4 +1,5 @@
 {% load static %}
+{% load logo_tags %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -28,11 +29,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'home' %}">
-                {% if site_config.logo %}
-                    <img src="{{ site_config.logo.url }}" alt="{{ site_config.nom_site }}" class="me-2 logo-no-background">
-                {% else %}
-                    <i class="fas fa-globe text-primary-custom me-2"></i>
-                {% endif %}
+                <img src="{% get_logo_url site_config %}" alt="{{ site_config.nom_site }}" class="me-2 logo-no-background">
                 <span class="brand-text">{{ site_config.nom_site }}</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -80,7 +77,7 @@
         {% block content %}{% endblock %}
     </main>
 
-    <!-- Footer moderne et professionnel -->
+    <!-- Footer moderne et professionnel intégé avec bootstrap-->
     <footer class="footer-modern py-5">
         <div class="container">
             <div class="row">
@@ -88,11 +85,7 @@
                 <div class="col-lg-4 col-md-6 mb-5">
                     <div class="footer-brand">
                         <h4 class="footer-logo mb-3">
-                            {% if site_config.logo %}
-                                <img src="{{ site_config.logo.url }}" alt="{{ site_config.nom_site }}" height="50" class="me-2">
-                            {% else %}
-                                <i class="fas fa-globe text-accent-red me-2"></i>
-                            {% endif %}
+                            <img src="{% get_logo_url site_config %}" alt="{{ site_config.nom_site }}" height="50" class="me-2">
                             <span class="brand-text">{{ site_config.nom_site }}</span>
                         </h4>
                         <p class="footer-description">
@@ -203,7 +196,7 @@
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
+    <!--  dans le fichier à deployerBack to Top Button avec bootstrap oouoize iuboi poo oioiauurf iuoi ouure i  udoa uae iuzuvef uifezubu pooeziisaoid eoioioia jhzkoin jpoifioze zjskfnff ozoinozino -->
     <button id="backToTop" class="btn btn-primary rounded-circle position-fixed" style="bottom: 20px; right: 20px; display: none;">
         <i class="fas fa-arrow-up"></i>
     </button>
