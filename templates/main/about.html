@@ -1,0 +1,256 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}À propos - {{ site_config.nom_site }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header bg-primary-custom text-white" style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold text-white" data-aos="fade-right">À propos de {{ site_config.nom_site }}</h1>
+                <p class="lead text-white-50" data-aos="fade-right" data-aos-delay="100">
+                    Votre partenaire de confiance pour la transformation digitale
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- About Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6" data-aos="fade-right">
+                <h2 class="display-5 fw-bold text-dark mb-4">{{ site_config.about_titre }}</h2>
+                <p class="lead text-dark mb-4">
+                    {{ site_config.about_description }}
+                </p>
+                <p class="mb-4 text-dark">
+                    Depuis notre création, nous accompagnons les entreprises de toutes tailles dans leur 
+                    transformation digitale en fournissant des solutions informatiques innovantes et des 
+                    formations professionnelles de haute qualité.
+                </p>
+                <div class="row g-4">
+                    <div class="col-6">
+                        <div class="feature-box">
+                            <div class="feature-icon text-danger mb-2">
+                                <i class="fas fa-lightbulb fa-2x"></i>
+                            </div>
+                            <h5 class="text-dark">Innovation</h5>
+                            <p class="text-dark">Solutions à la pointe de la technologie</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="feature-box">
+                            <div class="feature-icon text-danger mb-2">
+                                <i class="fas fa-users fa-2x"></i>
+                            </div>
+                            <h5 class="text-dark">Expertise</h5>
+                            <p class="text-dark">Équipe d'experts certifiés</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6" data-aos="fade-left">
+                <div class="about-image">
+                    {% if about_images %}
+                        {% if about_images.count > 1 %}
+                            <!-- Carousel for multiple images -->
+                            <div id="aboutCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner">
+                                    {% for image in about_images %}
+                                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                                            <img src="{{ image.image.url }}" alt="{{ image.titre }}" class="img-fluid rounded shadow" style="height: 400px; object-fit: cover;">
+                                            {% if image.description %}
+                                                <div class="carousel-caption d-none d-md-block">
+                                                    <h5>{{ image.titre }}</h5>
+                                                    <p>{{ image.description }}</p>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#aboutCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Précédent</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#aboutCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Suivant</span>
+                                </button>
+                            </div>
+                        {% else %}
+                            <!-- Single image -->
+                            {% with about_images.first as image %}
+                                <img src="{{ image.image.url }}" alt="{{ image.titre }}" class="img-fluid rounded shadow" style="height: 400px; object-fit: cover;">
+                            {% endwith %}
+                        {% endif %}
+                    {% else %}
+                        <div class="about-icon-display d-flex align-items-center justify-content-center rounded shadow" style="height: 400px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <i class="fas fa-users" style="font-size: 150px;"></i>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Values Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold text-dark mb-3">Nos valeurs</h2>
+            <p class="lead text-dark">Les principes qui guident notre action quotidienne</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="value-card text-center h-100">
+                    <div class="value-icon mb-3">
+                        <i class="fas fa-handshake fa-3x text-danger"></i>
+                    </div>
+                    <h4 class="text-dark">Confiance</h4>
+                    <p class="text-dark">Nous bâtissons des relations durables basées sur la transparence et la fiabilité.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="value-card text-center h-100">
+                    <div class="value-icon mb-3">
+                        <i class="fas fa-graduation-cap fa-3x text-danger"></i>
+                    </div>
+                    <h4 class="text-dark">Excellence</h4>
+                    <p class="text-dark">Nous visons l'excellence dans chaque projet et formation que nous réalisons.</p>
+                </div>
+            </div>
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="value-card text-center h-100">
+                    <div class="value-icon mb-3">
+                        <i class="fas fa-sync-alt fa-3x text-danger"></i>
+                    </div>
+                    <h4 class="text-dark">Innovation</h4>
+                    <p class="text-dark">Nous restons à la pointe des technologies émergentes pour vous offrir le meilleur.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Customer Reviews Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <h2 class="display-5 fw-bold text-dark mb-3">Avis de nos clients</h2>
+            <p class="lead text-dark">Ce que disent nos clients de nos services</p>
+        </div>
+        <div class="row g-4">
+            {% for review in customer_reviews %}
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                <div class="review-card text-center h-100">
+                    <div class="review-avatar mb-3">
+                        {% if review.photo %}
+                            <img src="{{ review.photo.url }}" alt="{{ review.nom }}" class="rounded-circle" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid #f8f9fa;">
+                        {% else %}
+                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-light text-secondary" style="width: 100px; height: 100px; margin: 0 auto; border: 3px solid #f8f9fa;">
+                                <i class="fas fa-user" style="font-size: 40px;"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="review-rating mb-2">
+                        <div class="text-warning fs-4">
+                            {{ review.get_note_display }}
+                        </div>
+                    </div>
+                    <blockquote class="review-comment mb-3">
+                        <p class="text-dark fst-italic">"{{ review.commentaire|truncatewords:30 }}"</p>
+                    </blockquote>
+                    <div class="review-author">
+                        <h5 class="text-dark mb-1">{{ review.nom }}</h5>
+                        {% if review.entreprise %}
+                            <p class="text-muted mb-0">
+                                {% if review.poste %}
+                                    {{ review.poste }} - {{ review.entreprise }}
+                                {% else %}
+                                    {{ review.entreprise }}
+                                {% endif %}
+                            </p>
+                        {% elif review.poste %}
+                            <p class="text-muted mb-0">{{ review.poste }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="bg-light p-5 rounded">
+                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted mb-3">Aucun avis client pour le moment</h4>
+                    <p class="text-muted">Soyez le premier à partager votre expérience !</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% if customer_reviews|length > 3 %}
+        <div class="text-center mt-5">
+            <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-comment me-2"></i>Laisser un avis
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5 bg-light text-white">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="stat-item">
+                    <i class="fas fa-users fa-3x text-primary-custom mb-3"></i>
+                    <h3 class="display-4 fw-bold">200+</h3>
+                    <p class="text-muted">Clients satisfaits</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="stat-item">
+                    <i class="fas fa-project-diagram fa-3x text-primary-custom mb-3"></i>
+                    <h3 class="display-4 fw-bold">1000+</h3>
+                    <p class="text-muted">Projets réalisés</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="stat-item">
+                    <i class="fas fa-graduation-cap fa-3x text-primary-custom mb-3"></i>
+                    <h3 class="display-4 fw-bold"></h3>
+                    <p class="text-muted">Formations dispensées</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="stat-item">
+                    <i class="fas fa-award fa-3x text-primary-custom mb-3"></i>
+                    <h3 class="display-4 fw-bold">11+</h3>
+                    <p class="text-muted">Années d'expérience</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-primary-custom text-white">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h3 class="display-6 fw-bold mb-3">Prêt à collaborer avec nous ?</h3>
+                <p class="lead mb-4">
+                    Contactez-nous dès maintenant pour discuter de vos projets et besoins en formation.
+                </p>
+                <a href="{% url 'contact' %}" class="btn btn-light-custom btn-lg">
+                    <i class="fas fa-comments me-2"></i>Contactez-nous
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

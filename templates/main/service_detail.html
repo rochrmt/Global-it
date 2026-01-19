@@ -1,0 +1,119 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ service.titre }} - {{ site_config.nom_site }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header bg-primary-custom text-white " style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb" data-aos="fade-right">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'services' %}" class="text-white">Services</a></li>
+                        <li class="display-4 fw-bold" data-aos="fade-right" data-aos-delay="100">{{ service.titre }}</li>
+                    </ol>
+                </nav>
+                <h1 class="display-5 fw-bold text-white" data-aos="fade-right" data-aos-delay="100">{{ service.titre }}</h1>
+                <p class="lead text-white" data-aos="fade-right" data-aos-delay="200">{{ service.description_courte }}</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Service Detail -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8" data-aos="fade-right">
+                <div class="service-content">
+                    <div class="service-category mb-3">
+                        <span class="badge bg-primary-custom fs-6">{{ service.get_categorie_display }}</span>
+                    </div>
+                    {% if service.image %}
+                    <div class="service-main-image mb-4">
+                        <img src="{{ service.image.url }}" alt="{{ service.titre }}" class="img-fluid rounded shadow">
+                    </div>
+                    {% else %}
+                    <div class="service-main-image mb-4">
+                        <div class="service-icon-placeholder-large rounded d-flex align-items-center justify-content-center" style="height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                            <i class="fas {{ service.icone }}" style="font-size: 100px;"></i>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="service-description">
+                        {{ service.description|linebreaks }}
+                    </div>
+                </div>
+                
+                <!-- CTA -->
+                <div class="service-cta mt-5 p-4 bg-light rounded">
+                    <h4 class="mb-3">Intéressé par ce service ?</h4>
+                    <p class="text-muted mb-4">Contactez-nous pour discuter de votre projet et obtenir un devis personnalisé.</p>
+                    <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-comments me-2"></i>Demander un devis
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4" data-aos="fade-left">
+                <div class="service-sidebar">
+                    <!-- Service Features -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary-custom text-white">
+                            <h5 class="mb-0"><i class="fas fa-star me-2"></i>Avantages</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Experts certifiés</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Solutions sur-mesure</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Support 24/7</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Garantie satisfaction</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Contact Info -->
+                    <div class="card">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0"><i class="fas fa-phone me-2"></i>Contact rapide</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-2"><i class="fas fa-envelope text-primary-custom me-2"></i>info@global-it.ca</p>
+                            <p class="mb-2"><i class="fas fa-phone text-primary-custom me-2"></i>+236 72 77 08 08</p>
+                            <p class="mb-0"><i class="fas fa-clock text-primary-custom me-2"></i>Lun-Ven: 8h-18h</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Related Services -->
+{% if autres_services %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <h3 class="text-center mb-5" data-aos="fade-up">Autres services qui pourraient vous intéresser</h3>
+        <div class="row g-4">
+            {% for service in autres_services %}
+            <div class="col-md-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                <div class="service-card h-100">
+                    <div class="service-icon">
+                        <i class="fas {{ service.icone }}"></i>
+                    </div>
+                    <h5 class="mb-3">{{ service.titre }}</h5>
+                    <p class="text-muted mb-3">{{ service.description_courte }}</p>
+                    <a href="{% url 'service_detail' service.pk %}" class="btn btn-outline-primary btn-sm">
+                        En savoir plus <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

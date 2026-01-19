@@ -1,0 +1,625 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Gestionnaire d'Images du Site - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-images me-2"></i>Gestionnaire d'Images du Site
+            </h1>
+            <p class="text-muted mt-2">Gérez toutes les images du site depuis cette interface</p>
+        </div>
+    </div>
+
+    <!-- Alertes -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Navigation par onglets -->
+    <ul class="nav nav-pills mb-4" id="imageTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="services-tab" data-bs-toggle="pill" data-bs-target="#services" type="button" role="tab">
+                <i class="fas fa-concierge-bell me-2"></i>Services
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="formations-tab" data-bs-toggle="pill" data-bs-target="#formations" type="button" role="tab">
+                <i class="fas fa-graduation-cap me-2"></i>Formations
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="carousel-tab" data-bs-toggle="pill" data-bs-target="#carousel" type="button" role="tab">
+                <i class="fas fa-images me-2"></i>Carousel
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="site-tab" data-bs-toggle="pill" data-bs-target="#site" type="button" role="tab">
+                <i class="fas fa-cog me-2"></i>Configuration Site
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="dashboard-tab" data-bs-toggle="pill" data-bs-target="#dashboard" type="button" role="tab">
+                <i class="fas fa-database me-2"></i>Images Dashboard
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="imageTabsContent">
+        <!-- Services -->
+        <div class="tab-pane fade show active" id="services" role="tabpanel">
+            <div class="row">
+                {% for service in service_images %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card shadow">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">{{ service.titre }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="position-relative">
+                                    {% if service.image %}
+                                        <img src="{{ service.image.url }}" alt="{{ service.titre }}" class="img-fluid rounded mb-3" style="max-height: 200px; width: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light text-center py-5 mb-3 rounded">
+                                            <i class="fas fa-image fa-3x text-muted"></i>
+                                            <p class="text-muted mt-2">Aucune image</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary btn-sm" onclick="changeImage('service', {{ service.id }}, '{{ service.titre }}')">
+                                        <i class="fas fa-edit me-1"></i>Changer l'image
+                                    </button>
+                                    {% if service.image %}
+                                        <button class="btn btn-danger btn-sm" onclick="removeImage('service', {{ service.id }}, '{{ service.titre }}')">
+                                            <i class="fas fa-trash me-1"></i>Supprimer
+                                        </button>
+                                    {% endif %}
+                                    <button class="btn btn-success btn-sm" onclick="quickUpload('service', {{ service.id }}, '{{ service.titre }}')">
+                                        <i class="fas fa-upload me-1"></i>Upload Rapide
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Aucun service avec image trouvé.
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Formations -->
+        <div class="tab-pane fade" id="formations" role="tabpanel">
+            <div class="row">
+                {% for formation in formation_images %}
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="card shadow">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="card-title mb-0">{{ formation.titre }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="position-relative">
+                                    {% if formation.image %}
+                                        <img src="{{ formation.image.url }}" alt="{{ formation.titre }}" class="img-fluid rounded mb-3" style="max-height: 200px; width: 100%; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light text-center py-5 mb-3 rounded">
+                                            <i class="fas fa-image fa-3x text-muted"></i>
+                                            <p class="text-muted mt-2">Aucune image</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-primary btn-sm" onclick="changeImage('formation', {{ formation.id }}, '{{ formation.titre }}')">
+                                        <i class="fas fa-edit me-1"></i>Changer l'image
+                                    </button>
+                                    {% if formation.image %}
+                                        <button class="btn btn-danger btn-sm" onclick="removeImage('formation', {{ formation.id }}, '{{ formation.titre }}')">
+                                            <i class="fas fa-trash me-1"></i>Supprimer
+                                        </button>
+                                    {% endif %}
+                                    <button class="btn btn-success btn-sm" onclick="quickUpload('formation', {{ formation.id }}, '{{ formation.titre }}')">
+                                        <i class="fas fa-upload me-1"></i>Upload Rapide
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Aucune formation avec image trouvée.
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Carousel -->
+        <div class="tab-pane fade" id="carousel" role="tabpanel">
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Images du Carousel</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Les images du carousel sont gérées via le système de gestion d'images statiques.</p>
+                            <a href="{% url 'dashboard:image_manager' %}" class="btn btn-primary">
+                                <i class="fas fa-images me-2"></i>Gérer les images du carousel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                {% for image in carousel_images %}
+                    <div class="col-lg-3 col-md-4 mb-3">
+                        <div class="card">
+                            <img src="{{ image.file.url }}" alt="{{ image.name }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                            <div class="card-body p-2">
+                                <h6 class="card-title small">{{ image.name|truncatechars:20 }}</h6>
+                                <p class="card-text small text-muted">{{ image.description|truncatechars:30 }}</p>
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="changeImage('carousel', {{ image.id }}, '{{ image.name }}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="removeImage('carousel', {{ image.id }}, '{{ image.name }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Aucune image de carousel trouvée.
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Configuration Site -->
+        <div class="tab-pane fade" id="site" role="tabpanel">
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-warning text-dark">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-globe me-2"></i>Logo du Site
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            {% if site_config and site_config.logo %}
+                                <img src="{{ site_config.logo.url }}" alt="Logo" class="img-fluid rounded mb-3" style="max-height: 150px;">
+                            {% else %}
+                                <div class="bg-light text-center py-4 mb-3 rounded">
+                                    <i class="fas fa-globe fa-3x text-muted"></i>
+                                    <p class="text-muted mt-2">Aucun logo configuré</p>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary" onclick="changeImage('site', 'logo', 'Logo du Site')">
+                                    <i class="fas fa-edit me-1"></i>Changer le logo
+                                </button>
+                                {% if site_config and site_config.logo %}
+                                    <button class="btn btn-danger" onclick="removeImage('site', 'logo', 'Logo du Site')">
+                                        <i class="fas fa-trash me-1"></i>Supprimer
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-image me-2"></i>Autres Images
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Gérez ici les autres images de configuration du site.</p>
+                            <button class="btn btn-outline-primary" onclick="showUploadModal()">
+                                <i class="fas fa-plus me-1"></i>Ajouter une image
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Images Dashboard -->
+        <div class="tab-pane fade" id="dashboard" role="tabpanel">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5>Images du Dashboard</h5>
+                        <button class="btn btn-primary" onclick="showUploadModal()">
+                            <i class="fas fa-upload me-2"></i>Upload d'Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                {% for image in dashboard_images %}
+                    <div class="col-lg-3 col-md-4 mb-3">
+                        <div class="card h-100">
+                            <img src="{{ image.file.url }}" alt="{{ image.name }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                            <div class="card-body p-2">
+                                <h6 class="card-title small">{{ image.name|truncatechars:20 }}</h6>
+                                <p class="card-text small text-muted">
+                                    <i class="fas fa-tag me-1"></i>{{ image.get_image_type_display }}
+                                </p>
+                                <div class="d-flex gap-1">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editDashboardImage({{ image.id }}, '{{ image.name }}')">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteDashboardImage({{ image.id }}, '{{ image.name }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Aucune image dans le dashboard.
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de changement d'image -->
+<div class="modal fade" id="changeImageModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Changer l'Image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="changeImageTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-section" type="button">
+                            Upload
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="dashboard-tab-modal" data-bs-toggle="tab" data-bs-target="#dashboard-section" type="button">
+                            Images Dashboard
+                        </button>
+                    </li>
+                </ul>
+                
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="upload-section" role="tabpanel">
+                        <form id="uploadImageForm" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" id="uploadContentType" name="content_type">
+                            <input type="hidden" id="uploadObjectId" name="object_id">
+                            <input type="hidden" name="image_source" value="upload">
+                            
+                            <div class="mb-3">
+                                <label for="imageFile" class="form-label">Sélectionner une image</label>
+                                <input type="file" class="form-control" id="imageFile" name="image_file" accept="image/*" required>
+                                <div class="form-text">Formats acceptés: JPG, PNG, GIF, WebP</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <img id="imagePreview" src="#" alt="Aperçu" class="img-fluid d-none" style="max-height: 200px;">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload me-2"></i>Uploader et Appliquer
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="tab-pane fade" id="dashboard-section" role="tabpanel">
+                        <form id="selectDashboardImageForm">
+                            {% csrf_token %}
+                            <input type="hidden" id="selectContentType" name="content_type">
+                            <input type="hidden" id="selectObjectId" name="object_id">
+                            <input type="hidden" name="image_source" value="dashboard">
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Sélectionner une image du dashboard</label>
+                                <div class="row" id="dashboardImagesGrid">
+                                    {% for image in dashboard_images %}
+                                        <div class="col-md-3 mb-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="dashboard_image_id" value="{{ image.id }}" id="image_{{ image.id }}">
+                                                <label class="form-check-label" for="image_{{ image.id }}">
+                                                    <img src="{{ image.file.url }}" alt="{{ image.name }}" class="img-thumbnail" style="max-height: 100px;">
+                                                    <small class="d-block text-muted">{{ image.name|truncatechars:15 }}</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-check me-2"></i>Appliquer l'Image
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'upload rapide -->
+<div class="modal fade" id="quickUploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload Rapide</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickUploadForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" id="quickContentType" name="content_type">
+                    <input type="hidden" id="quickObjectId" name="object_id">
+                    
+                    <div class="mb-3">
+                        <label for="quickImageFile" class="form-label">Sélectionner une image</label>
+                        <input type="file" class="form-control" id="quickImageFile" name="image_file" accept="image/*" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <img id="quickImagePreview" src="#" alt="Aperçu" class="img-fluid d-none" style="max-height: 150px;">
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-upload me-2"></i>Uploader
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.image-card {
+    transition: transform 0.2s;
+}
+.image-card:hover {
+    transform: translateY(-2px);
+}
+.nav-pills .nav-link.active {
+    background-color: #4e73df;
+}
+.form-check-label img {
+    cursor: pointer;
+}
+.form-check-input:checked + .form-check-label img {
+    border-color: #4e73df;
+    border-width: 3px;
+}
+</style>
+
+<script>
+let currentContentType = '';
+let currentObjectId = '';
+let currentTitle = '';
+
+// Fonction pour changer une image
+function changeImage(contentType, objectId, title) {
+    currentContentType = contentType;
+    currentObjectId = objectId;
+    currentTitle = title;
+    
+    document.getElementById('uploadContentType').value = contentType;
+    document.getElementById('uploadObjectId').value = objectId;
+    document.getElementById('selectContentType').value = contentType;
+    document.getElementById('selectObjectId').value = objectId;
+    
+    const modal = new bootstrap.Modal(document.getElementById('changeImageModal'));
+    modal.show();
+}
+
+// Fonction pour l'upload rapide
+function quickUpload(contentType, objectId, title) {
+    currentContentType = contentType;
+    currentObjectId = objectId;
+    currentTitle = title;
+    
+    document.getElementById('quickContentType').value = contentType;
+    document.getElementById('quickObjectId').value = objectId;
+    
+    const modal = new bootstrap.Modal(document.getElementById('quickUploadModal'));
+    modal.show();
+}
+
+// Fonction pour supprimer une image
+function removeImage(contentType, objectId, title) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer l'image de "${title}" ?`)) {
+        fetch("{% url 'dashboard:remove_site_image' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: `content_type=${contentType}&object_id=${objectId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Erreur lors de la suppression: ' + error);
+        });
+    }
+}
+
+// Aperçu de l'image uploadée
+document.getElementById('imageFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('imagePreview').src = e.target.result;
+            document.getElementById('imagePreview').classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+document.getElementById('quickImageFile').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('quickImagePreview').src = e.target.result;
+            document.getElementById('quickImagePreview').classList.remove('d-none');
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Soumission du formulaire d'upload
+document.getElementById('uploadImageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch("{% url 'dashboard:update_site_image' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de l\'upload: ' + error);
+    });
+});
+
+// Soumission du formulaire de sélection
+document.getElementById('selectDashboardImageForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch("{% url 'dashboard:update_site_image' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de la sélection: ' + error);
+    });
+});
+
+// Soumission du formulaire d'upload rapide
+document.getElementById('quickUploadForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch("{% url 'dashboard:quick_upload_image' %}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Erreur lors de l\'upload rapide: ' + error);
+    });
+});
+
+// Fonctions pour les images du dashboard
+function editDashboardImage(imageId, imageName) {
+    // Rediriger vers l'éditeur d'images du dashboard
+    window.location.href = `/dashboard/images/${imageId}/edit/`;
+}
+
+function deleteDashboardImage(imageId, imageName) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer l'image "${imageName}" ?`)) {
+        fetch(`/dashboard/images/${imageId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Erreur: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Erreur lors de la suppression: ' + error);
+        });
+    }
+}
+
+function showUploadModal() {
+    // Rediriger vers le gestionnaire d'images principal
+    window.location.href = "{% url 'dashboard:image_manager' %}";
+}
+</script>
+{% endblock %}

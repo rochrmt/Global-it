@@ -1,0 +1,39 @@
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Environnement virtuel
+venv/
+venv_new/
+env/
+ENV/
+
+# Environnement
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Système d'exploitation
+.DS_Store
+Thumbs.db
+
+# Fichiers de backup
+*.bak
+*.backup
+
+# Fichiers temporaires
+*.tmp
+*.temp

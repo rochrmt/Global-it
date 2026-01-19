@@ -1,0 +1,505 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% load dashboard_tags %}
+
+{% block title %}Gestion des images - Dashboard{% endblock %}
+{% block page_title %}Gestion des images{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Gestion des images</h2>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="fas fa-upload"></i> Upload d'images
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue d'ensemble des statistiques -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white">Total Images</h6>
+                            <h3 class="mb-0">{{ statistics.total }}</h3>
+                        </div>
+                        <i class="fas fa-images fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white">Images Actives</h6>
+                            <h3 class="mb-0">{{ statistics.active }}</h3>
+                        </div>
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white">Images Inactives</h6>
+                            <h3 class="mb-0">{{ statistics.inactive }}</h3>
+                        </div>
+                        <i class="fas fa-pause-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-white">Images Non Utilisées</h6>
+                            <h3 class="mb-0">{{ statistics.unused_count }}</h3>
+                        </div>
+                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Répartition par type -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Répartition par type</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for type_label, count in images_by_type.items %}
+                        <div class="col-6 mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>{{ type_label }}</span>
+                                <span class="badge bg-secondary">{{ count }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Images récemment ajoutées</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">{{ statistics.recent }} images ajoutées cette semaine</p>
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: {% if statistics.total > 0 %}{{ statistics.recent|floatformat:0 }}%{% else %}0%{% endif %}"></div>
+                    </div>
+                    <small class="text-muted">Progression hebdomadaire</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Filtres et recherche -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="type" class="form-label">Type d'image</label>
+                            <select name="type" id="type" class="form-select">
+                                <option value="">Tous les types</option>
+                                {% for value, label in image_types %}
+                                    <option value="{{ value }}" {% if current_filters.type == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Statut</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">Tous les statuts</option>
+                                <option value="active" {% if current_filters.status == 'active' %}selected{% endif %}>Actives</option>
+                                <option value="inactive" {% if current_filters.status == 'inactive' %}selected{% endif %}>Inactives</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="search" class="form-label">Recherche</label>
+                            <input type="text" name="search" id="search" class="form-control" placeholder="Nom de l'image..." value="{{ current_filters.search }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-outline-primary">Filtrer</button>
+                                <a href="{% url 'dashboard:image_manager' %}" class="btn btn-outline-secondary">Réinitialiser</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Images non utilisées -->
+    {% if unused_images %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Images non utilisées ({{ unused_images|length }})
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for image in unused_images %}
+                        <div class="col-lg-2 col-md-3 col-sm-4 mb-3">
+                            <div class="card">
+                                <img src="{{ image.file.url }}" alt="{{ image.name }}" class="card-img-top" style="height: 100px; object-fit: cover;">
+                                <div class="card-body p-2">
+                                    <h6 class="card-title small">{{ image.name|truncatechars:20 }}</h6>
+                                    <p class="card-text small text-muted">{{ image.created_at|date:"d/m/Y" }}</p>
+                                    <div class="btn-group btn-group-sm w-100">
+                                        <button class="btn btn-outline-primary btn-sm" onclick="viewImage('{{ image.file.url }}', '{{ image.name }}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-outline-success btn-sm" onclick="syncImage({{ image.id }}, '{{ image.name }}')">
+                                            <i class="fas fa-sync"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if unused_images|length > 10 %}
+                    <div class="text-center mt-3">
+                        <small class="text-muted">Et {{ unused_images|length|add:"-10" }} autres images non utilisées...</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Grille d'images -->
+    <div class="row">
+        {% for image in images %}
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="image-card">
+                    <div class="image-preview">
+                        <img src="{{ image.file.url }}" alt="{{ image.name }}" class="img-fluid">
+                        <div class="image-overlay">
+                            <div class="image-actions">
+                                <button class="btn btn-sm btn-light" onclick="viewImage('{{ image.file.url }}', '{{ image.name }}')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-light" onclick="toggleImageStatus({{ image.id }}, {{ image.is_active|lower }})">
+                                    <i class="fas fa-{{ image.is_active|yesno:'pause,play' }}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteImage({{ image.id }}, '{{ image.name }}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="image-info">
+                        <h6 class="image-title">{{ image.name|truncatechars:30 }}</h6>
+                        <p class="image-meta">
+                            <span class="badge bg-{{ image.image_type|get_badge_color }}">{{ image.get_image_type_display }}</span>
+                            <small class="text-muted">{{ image.created_at|date:"d/m/Y" }}</small>
+                        </p>
+                        <p class="image-meta">
+                            <small class="text-muted">
+                                <i class="fas fa-user"></i> {{ image.uploaded_by.username|default:"Anonyme" }}
+                            </small>
+                            <small class="text-{{ image.is_active|yesno:'success,danger' }}">
+                                <i class="fas fa-circle"></i> {{ image.is_active|yesno:"Active,Inactive" }}
+                            </small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="fas fa-images fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Aucune image trouvée</h4>
+                    <p class="text-muted">Commencez par uploader des images</p>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                        <i class="fas fa-upload"></i> Upload d'images
+                    </button>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal d'upload -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Upload d'images</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" enctype="multipart/form-data" action="{% url 'dashboard:upload_image' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="images" class="form-label">Sélectionner des images</label>
+                        <input type="file" class="form-control" id="images" name="images" multiple accept="image/*">
+                        <div class="form-text">Vous pouvez sélectionner plusieurs images à la fois</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="image_type" class="form-label">Type d'image</label>
+                        <select name="image_type" id="image_type" class="form-select">
+                            {% for value, label in image_types %}
+                                <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+
+                    
+                    <div class="upload-preview" id="uploadPreview"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Uploader
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de visualisation -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle">Visualiser l'image</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="viewModalImage" src="" alt="" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Visualiser une image
+function viewImage(url, name) {
+    document.getElementById('viewModalImage').src = url;
+    document.getElementById('viewModalTitle').textContent = name;
+    new bootstrap.Modal(document.getElementById('viewModal')).show();
+}
+
+// Basculer le statut d'une image
+function toggleImageStatus(imageId, currentStatus) {
+    const action = currentStatus ? 'désactiver' : 'activer';
+    if (confirm(`Êtes-vous sûr de vouloir ${action} cette image ?`)) {
+        fetch(`/dashboard/images/${imageId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(`Image ${action}e avec succès`, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur lors du changement de statut', 'danger');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('Erreur lors du changement de statut', 'danger');
+        });
+    }
+}
+
+// Supprimer une image
+function deleteImage(imageId, name) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer l\'image "' + name + '" ? Cette action est irréversible.')) {
+        fetch(`/dashboard/images/${imageId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Image supprimée avec succès', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                alert('Erreur lors de la suppression');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Erreur lors de la suppression');
+        });
+    }
+}
+
+// Synchroniser une image (rediriger vers la page de synchronisation)
+function syncImage(imageId, name) {
+    if (confirm('Voulez-vous synchroniser l\'image "' + name + '" avec un service, une formation ou la configuration du site ?')) {
+        window.location.href = `/dashboard/sync/?image_id=${imageId}`;
+    }
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+}
+
+// Prévisualisation des images à uploader
+document.getElementById('images').addEventListener('change', function(e) {
+    const files = e.target.files;
+    const preview = document.getElementById('uploadPreview');
+    preview.innerHTML = '';
+    
+    if (files.length > 0) {
+        preview.innerHTML = '<h6>Prévisualisation:</h6>';
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'preview-image';
+                    img.style.maxWidth = '100px';
+                    img.style.maxHeight = '100px';
+                    img.style.objectFit = 'cover';
+                    img.style.margin = '5px';
+                    img.style.borderRadius = '5px';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.image-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background: white;
+}
+
+.image-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.image-preview {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+
+.image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.image-card:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.image-info {
+    padding: 15px;
+}
+
+.image-title {
+    margin: 0 0 10px 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.image-meta {
+    margin: 0 0 5px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.upload-preview {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px dashed #ccc;
+    border-radius: 5px;
+    min-height: 50px;
+}
+
+.preview-image {
+    border: 1px solid #ddd;
+}
+</style>
+{% endblock %}

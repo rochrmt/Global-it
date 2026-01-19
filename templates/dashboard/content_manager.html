@@ -1,0 +1,1202 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Gestion du contenu - Dashboard{% endblock %}
+{% block page_title %}Gestion du contenu{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="container-fluid">
+    <!-- En-tête -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>Gestion du contenu</h2>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContentModal">
+                        <i class="fas fa-plus"></i> Ajouter du contenu
+                    </button>
+                    <a href="{% url 'dashboard:home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Statistiques -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-concierge-bell fa-2x text-primary mb-2"></i>
+                    <h3 class="stat-number">{{ services_count }}</h3>
+                    <p class="stat-label">Services</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-graduation-cap fa-2x text-success mb-2"></i>
+                    <h3 class="stat-number">{{ formations_count }}</h3>
+                    <p class="stat-label">Formations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x text-info mb-2"></i>
+                    <h3 class="stat-number">{{ team_count }}</h3>
+                    <p class="stat-label">Membres d'équipe</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body text-center">
+                    <i class="fas fa-newspaper fa-2x text-warning mb-2"></i>
+                    <h3 class="stat-number">{{ blog_count }}</h3>
+                    <p class="stat-label">Articles de blog</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Onglets de navigation -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <ul class="nav nav-pills mb-3" id="contentTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="services-tab" data-bs-toggle="pill" data-bs-target="#services" type="button" role="tab">
+                        <i class="fas fa-concierge-bell"></i> Services
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="formations-tab" data-bs-toggle="pill" data-bs-target="#formations" type="button" role="tab">
+                        <i class="fas fa-graduation-cap"></i> Formations
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="team-tab" data-bs-toggle="pill" data-bs-target="#team" type="button" role="tab">
+                        <i class="fas fa-users"></i> Équipe
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="blog-tab" data-bs-toggle="pill" data-bs-target="#blog" type="button" role="tab">
+                        <i class="fas fa-newspaper"></i> Blog
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="testimonials-tab" data-bs-toggle="pill" data-bs-target="#testimonials" type="button" role="tab">
+                        <i class="fas fa-star"></i> Témoignages
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Contenu des onglets -->
+    <div class="tab-content" id="contentTabsContent">
+        <!-- Services -->
+        <div class="tab-pane fade show active" id="services" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Services</h5>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                        <i class="fas fa-plus"></i> Ajouter un service
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if services %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Titre</th>
+                                        <th>Description</th>
+                                        <th>Prix</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for service in services %}
+                                    <tr>
+                                        <td>
+                                            {% if service.image %}
+                                                <img src="{{ service.image.url }}" alt="{{ service.title }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="img-thumbnail d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #f8f9fa;">
+                                                    <i class="fas fa-image text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ service.title }}</strong>
+                                            <br><small class="text-muted">{{ service.category|default:"Sans catégorie" }}</small>
+                                        </td>
+                                        <td>{{ service.description|truncatechars:100 }}</td>
+                                        <td>
+                                            {% if service.price %}
+                                                {{ service.price }} FCFA
+                                            {% else %}
+                                                <span class="text-muted">Non défini</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ service.is_active|yesno:'success,secondary' }}">
+                                                {{ service.is_active|yesno:"Actif,Inactif" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-primary" 
+                                                        onclick="editService({{ service.id }})" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-{{ service.is_active|yesno:'warning,success' }}" 
+                                                        onclick="toggleServiceStatus({{ service.id }}, {{ service.is_active|lower }})">
+                                                    <i class="fas fa-{{ service.is_active|yesno:'pause,play' }}"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="deleteService({{ service.id }}, '{{ service.title }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-concierge-bell fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Aucun service trouvé</h4>
+                            <p class="text-muted">Commencez par ajouter un service</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addServiceModal">
+                                <i class="fas fa-plus"></i> Ajouter un service
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Formations -->
+        <div class="tab-pane fade" id="formations" role="tabpanel">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Formations</h5>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addFormationModal">
+                        <i class="fas fa-plus"></i> Ajouter une formation
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if formations %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Titre</th>
+                                        <th>Description</th>
+                                        <th>Durée</th>
+                                        <th>Prix</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for formation in formations %}
+                                    <tr>
+                                        <td>
+                                            {% if formation.image %}
+                                                <img src="{{ formation.image.url }}" alt="{{ formation.title }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="img-thumbnail d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #f8f9fa;">
+                                                    <i class="fas fa-image text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ formation.title }}</strong>
+                                            <br><small class="text-muted">{{ formation.category|default:"Sans catégorie" }}</small>
+                                        </td>
+                                        <td>{{ formation.description|truncatechars:100 }}</td>
+                                        <td>{{ formation.duration|default:"Non définie" }}</td>
+                                        <td>
+                                            {% if formation.price %}
+                                                {{ formation.price }} FCFA
+                                            {% else %}
+                                                <span class="text-muted">Non défini</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ formation.is_active|yesno:'success,secondary' }}">
+                                                {{ formation.is_active|yesno:"Actif,Inactif" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-outline-primary" 
+                                                        onclick="editFormation({{ formation.id }})" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-{{ formation.is_active|yesno:'warning,success' }}" 
+                                                        onclick="toggleFormationStatus({{ formation.id }}, {{ formation.is_active|lower }})">
+                                                    <i class="fas fa-{{ formation.is_active|yesno:'pause,play' }}"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="deleteFormation({{ formation.id }}, '{{ formation.title }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Aucune formation trouvée</h4>
+                            <p class="text-muted">Commencez par ajouter une formation</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addFormationModal">
+                                <i class="fas fa-plus"></i> Ajouter une formation
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Équipe -->
+        <div class="tab-pane fade" id="team" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Membres de l'équipe</h5>
+                </div>
+                <div class="card-body">
+                    {% if team_members %}
+                        <div class="row">
+                            {% for member in team_members %}
+                            <div class="col-lg-4 col-md-6 mb-4">
+                                <div class="card team-member-card">
+                                    <div class="card-body text-center">
+                                        {% if member.image %}
+                                            <img src="{{ member.image.url }}" alt="{{ member.name }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px; background: #f8f9fa; margin: 0 auto;">
+                                                <i class="fas fa-user fa-2x text-muted"></i>
+                                            </div>
+                                        {% endif %}
+                                        <h5 class="card-title">{{ member.name }}</h5>
+                                        <p class="text-muted">{{ member.role }}</p>
+                                        <p class="card-text">{{ member.bio|truncatechars:150 }}</p>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="#" class="btn btn-outline-primary" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" 
+                                                    onclick="deleteTeamMember({{ member.id }}, '{{ member.name }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Aucun membre d'équipe trouvé</h4>
+                            <p class="text-muted">Commencez par ajouter un membre</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTeamMemberModal">
+                                <i class="fas fa-plus"></i> Ajouter un membre
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Blog -->
+        <div class="tab-pane fade" id="blog" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Articles de blog</h5>
+                </div>
+                <div class="card-body">
+                    {% if blog_posts %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Titre</th>
+                                        <th>Auteur</th>
+                                        <th>Date</th>
+                                        <th>Statut</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for post in blog_posts %}
+                                    <tr>
+                                        <td>
+                                            {% if post.image %}
+                                                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="img-thumbnail d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #f8f9fa;">
+                                                    <i class="fas fa-image text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <strong>{{ post.title }}</strong>
+                                            <br><small class="text-muted">{{ post.category|default:"Sans catégorie" }}</small>
+                                        </td>
+                                        <td>{{ post.author.username|default:"Anonyme" }}</td>
+                                        <td>{{ post.created_at|date:"d/m/Y" }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ post.is_published|yesno:'success,secondary' }}">
+                                                {{ post.is_published|yesno:"Publié,Brouillon" }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="#" class="btn btn-outline-primary" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-{{ post.is_published|yesno:'warning,success' }}" 
+                                                        onclick="toggleBlogPostStatus({{ post.id }}, {{ post.is_published|lower }})">
+                                                    <i class="fas fa-{{ post.is_published|yesno:'eye-slash,eye' }}"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="deleteBlogPost({{ post.id }}, '{{ post.title }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Aucun article de blog trouvé</h4>
+                            <p class="text-muted">Commencez par écrire un article</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBlogPostModal">
+                                <i class="fas fa-plus"></i> Écrire un article
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Témoignages -->
+        <div class="tab-pane fade" id="testimonials" role="tabpanel">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Témoignages clients</h5>
+                </div>
+                <div class="card-body">
+                    {% if testimonials %}
+                        <div class="row">
+                            {% for testimonial in testimonials %}
+                            <div class="col-lg-6 mb-4">
+                                <div class="card testimonial-card">
+                                    <div class="card-body">
+                                        <div class="d-flex align-items-center mb-3">
+                                            {% if testimonial.client_image %}
+                                                <img src="{{ testimonial.client_image.url }}" alt="{{ testimonial.client_name }}" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px; background: #f8f9fa;">
+                                                    <i class="fas fa-user fa-2x text-muted"></i>
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <h6 class="mb-0">{{ testimonial.client_name }}</h6>
+                                                <small class="text-muted">{{ testimonial.client_company|default:"" }}</small>
+                                            </div>
+                                        </div>
+                                        <p class="testimonial-text">"{{ testimonial.content|truncatechars:200 }}"</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="rating">
+                                                {% for i in "12345" %}
+                                                    <i class="fas fa-star {% if forloop.counter <= testimonial.rating %}text-warning{% else %}text-muted{% endif %}"></i>
+                                                {% endfor %}
+                                            </div>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="#" class="btn btn-outline-primary" title="Modifier">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger" 
+                                                        onclick="deleteTestimonial({{ testimonial.id }}, '{{ testimonial.client_name }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                            <h4 class="text-muted">Aucun témoignage trouvé</h4>
+                            <p class="text-muted">Commencez par ajouter un témoignage</p>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTestimonialModal">
+                                <i class="fas fa-plus"></i> Ajouter un témoignage
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter un service -->
+<div class="modal fade" id="addServiceModal" tabindex="-1" aria-labelledby="addServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addServiceModalLabel">Ajouter un service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addServiceForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="add_service_titre" class="form-label">Titre</label>
+                        <input type="text" class="form-control" id="add_service_titre" name="titre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_service_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="add_service_description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_service_description_courte" class="form-label">Description courte</label>
+                        <input type="text" class="form-control" id="add_service_description_courte" name="description_courte" maxlength="200">
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_service_categorie" class="form-label">Catégorie</label>
+                        <select class="form-select" id="add_service_categorie" name="categorie">
+                            <option value="developpement">Développement</option>
+                            <option value="infrastructure">Infrastructure IT</option>
+                            <option value="securite">Sécurité</option>
+                            <option value="consulting">Consulting</option>
+                            <option value="support">Support Technique</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_service_icone" class="form-label">Icône (Font Awesome)</label>
+                        <input type="text" class="form-control" id="add_service_icone" name="icone" placeholder="Ex: fa-code">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_service_prix" class="form-label">Prix</label>
+                                <input type="number" class="form-control" id="add_service_prix" name="prix" step="0.01" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_service_duree" class="form-label">Durée</label>
+                                <input type="text" class="form-control" id="add_service_duree" name="duree" placeholder="Ex: 2h, 1 jour...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_service_image" class="form-label">Image</label>
+                        <input type="file" class="form-control" id="add_service_image" name="image" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="add_service_disponible" name="disponible" checked>
+                            <label class="form-check-label" for="add_service_disponible">
+                                Disponible
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="addService()">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour ajouter une formation -->
+<div class="modal fade" id="addFormationModal" tabindex="-1" aria-labelledby="addFormationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addFormationModalLabel">Ajouter une formation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addFormationForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="add_formation_titre" class="form-label">Titre</label>
+                        <input type="text" class="form-control" id="add_formation_titre" name="titre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_formation_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="add_formation_description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_formation_categorie" class="form-label">Catégorie</label>
+                        <select class="form-select" id="add_formation_categorie" name="categorie">
+                            <option value="programmation">Programmation</option>
+                            <option value="reseaux">Réseaux</option>
+                            <option value="securite">Sécurité</option>
+                            <option value="cloud">Cloud Computing</option>
+                            <option value="data">Data Science</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_formation_niveau" class="form-label">Niveau</label>
+                        <select class="form-select" id="add_formation_niveau" name="niveau">
+                            <option value="debutant">Débutant</option>
+                            <option value="intermediaire">Intermédiaire</option>
+                            <option value="avance">Avancé</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_formation_objectifs" class="form-label">Objectifs</label>
+                        <textarea class="form-control" id="add_formation_objectifs" name="objectifs" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_formation_programme" class="form-label">Programme</label>
+                        <textarea class="form-control" id="add_formation_programme" name="programme" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_formation_duree" class="form-label">Durée</label>
+                                <input type="text" class="form-control" id="add_formation_duree" name="duree" placeholder="Ex: 3 jours, 24h">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_formation_prix" class="form-label">Prix</label>
+                                <input type="number" class="form-control" id="add_formation_prix" name="prix" step="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_formation_image" class="form-label">Image</label>
+                        <input type="file" class="form-control" id="add_formation_image" name="image" accept="image/*">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="add_formation_disponible" name="disponible" checked>
+                            <label class="form-check-label" for="add_formation_disponible">
+                                Disponible
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="addFormation()">Ajouter</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.team-member-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.team-member-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.testimonial-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.testimonial-text {
+    font-style: italic;
+    color: #666;
+}
+
+.rating i {
+    margin-right: 2px;
+}
+
+.nav-pills .nav-link {
+    border-radius: 20px;
+    margin-right: 10px;
+    color: #495057;
+    border: 1px solid #dee2e6;
+}
+
+.nav-pills .nav-link.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.nav-pills .nav-link:hover {
+    background-color: #f8f9fa;
+    color: #495057;
+}
+
+.nav-pills .nav-link.active:hover {
+    background-color: #0056b3;
+    color: white;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Fonctions de gestion du contenu
+function toggleServiceStatus(serviceId, currentStatus) {
+    if (confirm('Êtes-vous sûr de vouloir ' + (currentStatus ? 'désactiver' : 'activer') + ' ce service ?')) {
+        fetch(`/dashboard/services/${serviceId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function deleteService(serviceId, serviceName) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer le service "' + serviceName + '" ? Cette action est irréversible.')) {
+        fetch(`/dashboard/services/${serviceId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function toggleFormationStatus(formationId, currentStatus) {
+    if (confirm('Êtes-vous sûr de vouloir ' + (currentStatus ? 'désactiver' : 'activer') + ' cette formation ?')) {
+        fetch(`/dashboard/formations/${formationId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function deleteFormation(formationId, formationName) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer la formation "' + formationName + '" ? Cette action est irréversible.')) {
+        fetch(`/dashboard/formations/${formationId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+    }
+}
+
+function deleteTeamMember(memberId, memberName) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer le membre "' + memberName + '" ? Cette action est irréversible.')) {
+        // Fonction temporairement désactivée - modèle TeamMember non défini
+        showNotification('Fonctionnalité non disponible - modèle TeamMember non défini', 'warning');
+        console.log('TeamMember model not implemented yet');
+        /*
+        fetch(`/dashboard/team/${memberId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+        */
+    }
+}
+
+function toggleBlogPostStatus(postId, currentStatus) {
+    if (confirm('Êtes-vous sûr de vouloir ' + (currentStatus ? 'mettre en brouillon' : 'publier') + ' cet article ?')) {
+        // Fonction temporairement désactivée - modèle BlogPost non défini
+        showNotification('Fonctionnalité non disponible - modèle BlogPost non défini', 'warning');
+        console.log('BlogPost model not implemented yet');
+        /*
+        fetch(`/dashboard/blog/${postId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+        */
+    }
+}
+
+function deleteBlogPost(postId, postTitle) {
+    if (confirm('Êtes-vous sûr de vouloir supprimer l\'article "' + postTitle + '" ? Cette action est irréversible.')) {
+        // Fonction temporairement désactivée - modèle BlogPost non défini
+        showNotification('Fonctionnalité non disponible - modèle BlogPost non défini', 'warning');
+        console.log('BlogPost model not implemented yet');
+        /*
+        fetch(`/dashboard/blog/${postId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+        */
+    }
+}
+
+function saveService() {
+    const form = document.getElementById('serviceForm');
+    const formData = new FormData(form);
+    const serviceId = form.dataset.serviceId;
+    
+    const url = serviceId ? `/dashboard/services/${serviceId}/edit/` : '/dashboard/services/add/';
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editServiceModal'));
+            modal.hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Erreur: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur de connexion', 'danger');
+        console.error('Error:', error);
+    });
+}
+
+// Fonctions d'édition
+function editService(serviceId) {
+    // Charger les données du service et ouvrir le modal
+    fetch(`/dashboard/services/${serviceId}/get/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remplir le formulaire avec les données du service
+            const form = document.getElementById('serviceForm');
+            form.dataset.serviceId = serviceId;
+            
+            // Remplir les champs du formulaire
+            document.getElementById('service_title').value = data.service.titre;
+            document.getElementById('service_description').value = data.service.description;
+            document.getElementById('service_description_courte').value = data.service.description_courte;
+            document.getElementById('service_categorie').value = data.service.categorie;
+            document.getElementById('service_icone').value = data.service.icone;
+            document.getElementById('service_ordre').value = data.service.ordre;
+            document.getElementById('service_est_actif').checked = data.service.est_actif;
+            
+            // Ouvrir le modal
+            const modal = new bootstrap.Modal(document.getElementById('editServiceModal'));
+            modal.show();
+        } else {
+            showNotification('Erreur: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur de connexion', 'danger');
+        console.error('Error:', error);
+    });
+}
+
+function editFormation(formationId) {
+    // Fonction similaire pour les formations
+    fetch(`/dashboard/formations/${formationId}/get/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remplir le formulaire avec les données de la formation
+            const form = document.getElementById('formationForm');
+            form.dataset.formationId = formationId;
+            
+            // Remplir les champs du formulaire
+            document.getElementById('formation_titre').value = data.formation.titre;
+            document.getElementById('formation_description').value = data.formation.description;
+            document.getElementById('formation_categorie').value = data.formation.categorie;
+            document.getElementById('formation_niveau').value = data.formation.niveau;
+            document.getElementById('formation_objectifs').value = data.formation.objectifs;
+            document.getElementById('formation_programme').value = data.formation.programme;
+            document.getElementById('formation_duree').value = data.formation.duree;
+            document.getElementById('formation_prix').value = data.formation.prix;
+            document.getElementById('formation_disponible').checked = data.formation.disponible;
+            
+            // Ouvrir le modal
+            const modal = new bootstrap.Modal(document.getElementById('editFormationModal'));
+            modal.show();
+        } else {
+            showNotification('Erreur: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur de connexion', 'danger');
+        console.error('Error:', error);
+    });
+}
+
+function saveFormation() {
+    const form = document.getElementById('formationForm');
+    const formData = new FormData(form);
+    const formationId = form.dataset.formationId;
+    
+    const url = formationId ? `/dashboard/formations/${formationId}/edit/` : '/dashboard/formations/add/';
+    
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editFormationModal'));
+            modal.hide();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Erreur: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur de connexion', 'danger');
+        console.error('Error:', error);
+    });
+}
+
+// Fonctions pour ajouter des services et formations
+function addService() {
+    const form = document.getElementById('addServiceForm');
+    const formData = new FormData(form);
+    
+    fetch('/dashboard/services/add/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addServiceModal'));
+            modal.hide();
+            form.reset();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Erreur: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur de connexion', 'danger');
+        console.error('Error:', error);
+    });
+}
+
+function addFormation() {
+    const form = document.getElementById('addFormationForm');
+    const formData = new FormData(form);
+    
+    fetch('/dashboard/formations/add/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addFormationModal'));
+            modal.hide();
+            form.reset();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Erreur: ' + data.error, 'danger');
+        }
+    })
+    .catch(error => {
+        showNotification('Erreur de connexion', 'danger');
+        console.error('Error:', error);
+    });
+}
+</script>
+
+<!-- Modal pour éditer un service -->
+<div class="modal fade" id="editServiceModal" tabindex="-1" aria-labelledby="editServiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editServiceModalLabel">Modifier le service</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="serviceForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="service_title" class="form-label">Titre</label>
+                        <input type="text" class="form-control" id="service_title" name="titre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="service_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="service_description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="service_description_courte" class="form-label">Description courte</label>
+                        <input type="text" class="form-control" id="service_description_courte" name="description_courte" maxlength="200">
+                    </div>
+                    <div class="mb-3">
+                        <label for="service_categorie" class="form-label">Catégorie</label>
+                        <select class="form-select" id="service_categorie" name="categorie">
+                            <option value="developpement">Développement</option>
+                            <option value="infrastructure">Infrastructure IT</option>
+                            <option value="securite">Sécurité</option>
+                            <option value="consulting">Consulting</option>
+                            <option value="support">Support Technique</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="service_icone" class="form-label">Icône (Font Awesome)</label>
+                        <input type="text" class="form-control" id="service_icone" name="icone" placeholder="Ex: fa-code">
+                    </div>
+                    <div class="mb-3">
+                        <label for="service_ordre" class="form-label">Ordre d'affichage</label>
+                        <input type="number" class="form-control" id="service_ordre" name="ordre" value="0">
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="service_est_actif" name="est_actif">
+                            <label class="form-check-label" for="service_est_actif">
+                                Actif
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="saveService()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour éditer une formation -->
+<div class="modal fade" id="editFormationModal" tabindex="-1" aria-labelledby="editFormationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editFormationModalLabel">Modifier la formation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formationForm" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="formation_titre" class="form-label">Titre</label>
+                        <input type="text" class="form-control" id="formation_titre" name="titre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="formation_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="formation_description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="formation_categorie" class="form-label">Catégorie</label>
+                        <select class="form-select" id="formation_categorie" name="categorie">
+                            <option value="programmation">Programmation</option>
+                            <option value="reseaux">Réseaux</option>
+                            <option value="securite">Sécurité</option>
+                            <option value="cloud">Cloud Computing</option>
+                            <option value="data">Data Science</option>
+                            <option value="autre">Autre</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="formation_niveau" class="form-label">Niveau</label>
+                        <select class="form-select" id="formation_niveau" name="niveau">
+                            <option value="debutant">Débutant</option>
+                            <option value="intermediaire">Intermédiaire</option>
+                            <option value="avance">Avancé</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="formation_objectifs" class="form-label">Objectifs</label>
+                        <textarea class="form-control" id="formation_objectifs" name="objectifs" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="formation_programme" class="form-label">Programme</label>
+                        <textarea class="form-control" id="formation_programme" name="programme" rows="3"></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formation_duree" class="form-label">Durée</label>
+                                <input type="text" class="form-control" id="formation_duree" name="duree" placeholder="Ex: 3 jours, 24h">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="formation_prix" class="form-label">Prix</label>
+                                <input type="number" class="form-control" id="formation_prix" name="prix" step="0.01" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="formation_disponible" name="disponible">
+                            <label class="form-check-label" for="formation_disponible">
+                                Disponible
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" onclick="saveFormation()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

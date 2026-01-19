@@ -1,0 +1,383 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Tableau de bord - GlobalTit{% endblock %}
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Statistiques rapides -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-primary">
+                            <i class="fas fa-images text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h3 class="stat-number">{{ total_images }}</h3>
+                            <p class="stat-label">Images totales</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-success">
+                            <i class="fas fa-check-circle text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h3 class="stat-number">{{ active_images }}</h3>
+                            <p class="stat-label">Images actives</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning">
+                            <i class="fas fa-image text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h3 class="stat-number">{{ total_carousel_images }}</h3>
+                            <p class="stat-label">Images Carousel</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-info">
+                            <i class="fas fa-play-circle text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h3 class="stat-number">{{ active_carousel_images }}</h3>
+                            <p class="stat-label">Carousel Actif</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-info">
+                            <i class="fas fa-concierge-bell text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h3 class="stat-number">{{ total_services }}</h3>
+                            <p class="stat-label">Services</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="stat-icon bg-warning">
+                            <i class="fas fa-graduation-cap text-white"></i>
+                        </div>
+                        <div class="ms-3">
+                            <h3 class="stat-number">{{ total_formations }}</h3>
+                            <p class="stat-label">Formations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Actions rapides -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt text-primary"></i>
+                        Actions rapides
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'dashboard:image_manager' %}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-plus"></i> Ajouter des images
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'dashboard:carousel_manager' %}" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-image"></i> Gérer le carousel
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'dashboard:site_settings' %}" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-cog"></i> Configurer le site
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{% url 'dashboard:content_manager' %}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-edit"></i> Gérer le contenu
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="/" target="_blank" class="btn btn-outline-success w-100">
+                                <i class="fas fa-eye"></i> Voir le site
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Activités récentes -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history text-info"></i>
+                        Activités récentes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_activities %}
+                        <div class="activity-list">
+                            {% for activity in recent_activities %}
+                                <div class="activity-item">
+                                    <div class="activity-icon">
+                                        <i class="fas fa-{{ activity.action }} text-{{ activity.get_action_color }}"></i>
+                                    </div>
+                                    <div class="activity-content">
+                                        <h6 class="activity-title">{{ activity.get_action_display }}</h6>
+                                        <p class="activity-description">{{ activity.description }}</p>
+                                        <small class="activity-time">{{ activity.timestamp|timesince }} ago</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-info-circle fa-2x mb-2"></i>
+                            <p>Aucune activité récente</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Statut du système -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-server text-success"></i>
+                        Statut du système
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="system-status">
+                        <div class="status-item">
+                            <span class="status-label">Serveur</span>
+                            <span class="status-badge bg-success">En ligne</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Base de données</span>
+                            <span class="status-badge bg-success">Connectée</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="status-label">Fichiers statiques</span>
+                            <span class="status-badge bg-success">OK</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Liens utiles -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-link text-primary"></i>
+                        Liens utiles
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="quick-links">
+                        <a href="{% url 'dashboard:image_manager' %}" class="quick-link">
+                            <i class="fas fa-images"></i>
+                            Gestion des images
+                        </a>
+                        <a href="{% url 'dashboard:site_settings' %}" class="quick-link">
+                            <i class="fas fa-cog"></i>
+                            Paramètres du site
+                        </a>
+                        <a href="{% url 'dashboard:activity_log' %}" class="quick-link">
+                            <i class="fas fa-history"></i>
+                            Journal d'activité
+                        </a>
+                        <a href="{% url 'dashboard:file_manager' %}" class="quick-link">
+                            <i class="fas fa-folder"></i>
+                            Gestionnaire de fichiers
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.stat-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 0;
+    color: #333;
+}
+
+.stat-label {
+    margin: 0;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.activity-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+}
+
+.activity-content {
+    flex: 1;
+}
+
+.activity-title {
+    margin: 0 0 5px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.activity-description {
+    margin: 0 0 5px 0;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.activity-time {
+    color: #999;
+    font-size: 0.8rem;
+}
+
+.system-status {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-label {
+    font-weight: 500;
+}
+
+.status-badge {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    border-radius: 15px;
+}
+
+.quick-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.quick-link {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    text-decoration: none;
+    color: #333;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+}
+
+.quick-link:hover {
+    background-color: #f8f9fa;
+    text-decoration: none;
+    color: #333;
+}
+
+.quick-link i {
+    width: 20px;
+    margin-right: 10px;
+    color: #007bff;
+}
+</style>
+{% endblock %}

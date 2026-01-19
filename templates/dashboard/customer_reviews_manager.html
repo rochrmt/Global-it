@@ -1,0 +1,514 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Avis Clients - Dashboard{% endblock %}
+
+{% block extra_css %}
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">
+                    <i class="fas fa-star text-warning"></i> Gestion des Avis Clients
+                </h1>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+                    <i class="fas fa-plus"></i> Ajouter un Avis
+                </button>
+            </div>
+
+            <!-- Notifications -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Tableau des avis -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Liste des Avis Clients</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="reviewsTable" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Nom</th>
+                                    <th>Entreprise</th>
+                                    <th>Poste</th>
+                                    <th>Note</th>
+                                    <th>Commentaire</th>
+                                    <th>Ordre</th>
+                                    <th>Statut</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for review in reviews %}
+                                <tr>
+                                    <td class="text-center">
+                                        {% if review.photo %}
+                                            <img src="{{ review.photo.url }}" alt="{{ review.nom }}" class="rounded-circle" width="40" height="40" style="object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white" style="width: 40px; height: 40px;">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                    <td><strong>{{ review.nom }}</strong></td>
+                                    <td>{{ review.entreprise|default:"-" }}</td>
+                                    <td>{{ review.poste|default:"-" }}</td>
+                                    <td>
+                                        <div class="text-warning">
+                                            {{ review.get_note_display }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ review.commentaire }}">
+                                            {{ review.commentaire }}
+                                        </div>
+                                    </td>
+                                    <td>{{ review.ordre }}</td>
+                                    <td>
+                                        {% if review.est_actif %}
+                                            <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ review.date_creation|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <button class="btn btn-sm btn-outline-primary" onclick="editReview({{ review.id }})" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-warning" onclick="toggleReviewStatus({{ review.id }}, {{ review.est_actif|yesno:"false,true" }})" title="{{ review.est_actif|yesno:"Désactiver,Activer" }}">
+                                                <i class="fas fa-{{ review.est_actif|yesno:"eye-slash,eye" }}"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="deleteReview({{ review.id }}, '{{ review.nom }}')" title="Supprimer">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="10" class="text-center text-muted">
+                                        <i class="fas fa-star fa-3x mb-3"></i>
+                                        <p>Aucun avis client pour le moment.</p>
+                                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+                                            <i class="fas fa-plus"></i> Ajouter le premier avis
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajouter un Avis -->
+<div class="modal fade" id="addReviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un Avis Client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addReviewForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_nom" class="form-label">Nom *</label>
+                                <input type="text" class="form-control" id="add_nom" name="nom" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_note" class="form-label">Note *</label>
+                                <select class="form-select" id="add_note" name="note" required>
+                                    <option value="5">5 étoiles - Excellent</option>
+                                    <option value="4">4 étoiles - Très bien</option>
+                                    <option value="3">3 étoiles - Bien</option>
+                                    <option value="2">2 étoiles - Moyen</option>
+                                    <option value="1">1 étoile - Insuffisant</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_entreprise" class="form-label">Entreprise</label>
+                                <input type="text" class="form-control" id="add_entreprise" name="entreprise">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_poste" class="form-label">Poste/Fonction</label>
+                                <input type="text" class="form-control" id="add_poste" name="poste">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="add_commentaire" class="form-label">Commentaire *</label>
+                        <textarea class="form-control" id="add_commentaire" name="commentaire" rows="4" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_photo" class="form-label">Photo du client</label>
+                                <input type="file" class="form-control" id="add_photo" name="photo" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="add_ordre" class="form-label">Ordre d'affichage</label>
+                                <input type="number" class="form-control" id="add_ordre" name="ordre" value="0" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="add_est_actif" name="est_actif" checked>
+                            <label class="form-check-label" for="add_est_actif">
+                                Activer cet avis
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Ajouter l'Avis</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Modifier un Avis -->
+<div class="modal fade" id="editReviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Modifier l'Avis Client</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editReviewForm" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="edit_review_id" name="review_id">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_nom" class="form-label">Nom *</label>
+                                <input type="text" class="form-control" id="edit_nom" name="nom" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_note" class="form-label">Note *</label>
+                                <select class="form-select" id="edit_note" name="note" required>
+                                    <option value="5">5 étoiles - Excellent</option>
+                                    <option value="4">4 étoiles - Très bien</option>
+                                    <option value="3">3 étoiles - Bien</option>
+                                    <option value="2">2 étoiles - Moyen</option>
+                                    <option value="1">1 étoile - Insuffisant</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_entreprise" class="form-label">Entreprise</label>
+                                <input type="text" class="form-control" id="edit_entreprise" name="entreprise">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_poste" class="form-label">Poste/Fonction</label>
+                                <input type="text" class="form-control" id="edit_poste" name="poste">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_commentaire" class="form-label">Commentaire *</label>
+                        <textarea class="form-control" id="edit_commentaire" name="commentaire" rows="4" required></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_photo" class="form-label">Photo du client</label>
+                                <input type="file" class="form-control" id="edit_photo" name="photo" accept="image/*">
+                                <div id="current_photo" class="mt-2"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_ordre" class="form-label">Ordre d'affichage</label>
+                                <input type="number" class="form-control" id="edit_ordre" name="ordre" min="0">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_est_actif" name="est_actif">
+                            <label class="form-check-label" for="edit_est_actif">
+                                Activer cet avis
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Modifier l'Avis</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Récupérer le token CSRF
+const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+console.log('Page avis clients chargée, CSRF token:', csrfToken ? 'OK' : 'Manquant');
+
+// Fonction pour ajouter un avis
+document.addEventListener('DOMContentLoaded', function() {
+    const addForm = document.getElementById('addReviewForm');
+    if (addForm) {
+        addForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            
+            console.log('Ajout d\'un nouvel avis...');
+            
+            fetch("{% url 'dashboard:add_customer_review' %}", {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => {
+                console.log('Réponse reçue:', response);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Données reçues:', data);
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addReviewModal'));
+                    modal.hide();
+                    this.reset();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification('Erreur: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur complète:', error);
+                showNotification('Erreur de connexion: ' + error.message, 'danger');
+            });
+        });
+    }
+});
+
+// Fonction pour modifier un avis
+function editReview(reviewId) {
+    fetch(`/dashboard/customer-reviews/${reviewId}/get/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const review = data.review;
+                
+                // Remplir le formulaire
+                document.getElementById('edit_review_id').value = review.id;
+                document.getElementById('edit_nom').value = review.nom;
+                document.getElementById('edit_entreprise').value = review.entreprise;
+                document.getElementById('edit_poste').value = review.poste;
+                document.getElementById('edit_commentaire').value = review.commentaire;
+                document.getElementById('edit_note').value = review.note;
+                document.getElementById('edit_ordre').value = review.ordre;
+                document.getElementById('edit_est_actif').checked = review.est_actif;
+                
+                // Afficher la photo actuelle si elle existe
+                const currentPhotoDiv = document.getElementById('current_photo');
+                if (review.photo_url) {
+                    currentPhotoDiv.innerHTML = `
+                        <img src="${review.photo_url}" alt="Photo actuelle" class="img-thumbnail" style="max-height: 100px;">
+                        <div class="form-text">Photo actuelle</div>
+                    `;
+                } else {
+                    currentPhotoDiv.innerHTML = '<div class="form-text">Aucune photo actuelle</div>';
+                }
+                
+                // Ouvrir le modal
+                const modal = new bootstrap.Modal(document.getElementById('editReviewModal'));
+                modal.show();
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+}
+
+// Fonction pour soumettre la modification
+document.addEventListener('DOMContentLoaded', function() {
+    const editForm = document.getElementById('editReviewForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const reviewId = document.getElementById('edit_review_id').value;
+            const formData = new FormData(this);
+            
+            fetch(`/dashboard/customer-reviews/${reviewId}/edit/`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification(data.message, 'success');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editReviewModal'));
+                    modal.hide();
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showNotification('Erreur: ' + data.error, 'danger');
+                }
+            })
+            .catch(error => {
+                showNotification('Erreur de connexion', 'danger');
+                console.error('Error:', error);
+            });
+        });
+    }
+});
+
+// Fonction pour basculer le statut
+function toggleReviewStatus(reviewId, currentStatus) {
+    if (confirm(`Êtes-vous sûr de vouloir ${currentStatus ? 'activer' : 'désactiver'} cet avis ?`)) {
+        fetch(`/dashboard/customer-reviews/${reviewId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+    }
+}
+
+// Fonction pour supprimer
+function deleteReview(reviewId, reviewName) {
+    if (confirm(`Êtes-vous sûr de vouloir supprimer l'avis de ${reviewName} ?`)) {
+        fetch(`/dashboard/customer-reviews/${reviewId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification('Erreur: ' + data.error, 'danger');
+            }
+        })
+        .catch(error => {
+            showNotification('Erreur de connexion', 'danger');
+            console.error('Error:', error);
+        });
+    }
+}
+
+// Fonction pour afficher les notifications
+function showNotification(message, type) {
+    // Créer l'élément de notification
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    notification.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Ajouter au body
+    document.body.appendChild(notification);
+    
+    // Auto-supprimer après 5 secondes
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- DataTables -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<!-- DataTables Bootstrap 5 -->
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+// Initialiser le DataTable après le chargement de jQuery
+$(document).ready(function() {
+    if ($('#reviewsTable').length) {
+        $('#reviewsTable').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/fr-FR.json'
+            },
+            order: [[8, 'desc']], // Trier par date de création (desc)
+            columnDefs: [
+                { orderable: false, targets: [0, 9] } // Désactiver le tri pour photo et actions
+            ]
+        });
+    }
+});
+</script>
+{% endblock %}

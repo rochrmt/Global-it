@@ -1,0 +1,119 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Nos Partenaires - {{ site_config.nom_site }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header bg-primary-custom text-white" style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold text-white" data-aos="fade-right">Nos Partenaires</h1>
+                <p class="lead text-white-50" data-aos="fade-right" data-aos-delay="100">
+                    Découvrez nos partenaires de confiance qui nous accompagnent dans notre mission
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Partners Grid -->
+<section class="py-5">
+    <div class="container">
+        <div class="row g-4">
+            {% for partner in partners %}
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                <div class="partner-card h-100 text-center">
+                    <div class="partner-logo mb-3">
+                        {% if partner.logo %}
+                            <a href="{{ partner.site_web }}" target="_blank" rel="noopener noreferrer">
+                                <img src="{{ partner.logo.url }}" alt="{{ partner.nom }}" class="img-fluid rounded" style="height: 120px; object-fit: contain; width: 100%;">
+                            </a>
+                        {% else %}
+                            <div class="partner-logo-placeholder rounded d-flex align-items-center justify-content-center" style="height: 120px; background: #f8f9fa;">
+                                <i class="fas fa-handshake text-muted" style="font-size: 48px;"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="mb-2">
+                        <a href="{{ partner.site_web }}" target="_blank" rel="noopener noreferrer" class="text-dark text-decoration-none">
+                            {{ partner.nom }}
+                            <i class="fas fa-external-link-alt ms-1" style="font-size: 12px;"></i>
+                        </a>
+                    </h5>
+                    {% if partner.description %}
+                    <p class="text-muted small">{{ partner.description|truncatewords:15 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Aucun partenaire disponible pour le moment.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 bg-light">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h2 class="display-5 fw-bold text-dark mb-3">Devenir partenaire ?</h2>
+                <p class="lead text-dark mb-4">
+                    Vous souhaitez collaborer avec nous ? Contactez-nous pour discuter d'un partenariat.
+                </p>
+                <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-handshake me-2"></i>Proposer un partenariat
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.partner-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px 20px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.partner-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.partner-logo a {
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.partner-logo a:hover {
+    transform: scale(1.05);
+}
+
+.partner-logo img {
+    filter: grayscale(0.2);
+    transition: filter 0.3s ease;
+}
+
+.partner-logo img:hover {
+    filter: grayscale(0);
+}
+
+.partner-logo-placeholder {
+    border: 2px dashed #dee2e6;
+    border-radius: 10px;
+}
+</style>
+{% endblock %}
