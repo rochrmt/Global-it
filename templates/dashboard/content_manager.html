@@ -215,7 +215,7 @@
                                     <tr>
                                         <td>
                                             {% if formation.image %}
-                                                <img src="{{ formation.image.url }}" alt="{{ formation.title }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                                <img src="{{ formation.image.url }}" alt="{{ formation.titre }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
                                             {% else %}
                                                 <div class="img-thumbnail d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background: #f8f9fa;">
                                                     <i class="fas fa-image text-muted"></i>
@@ -223,21 +223,21 @@
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <strong>{{ formation.title }}</strong>
-                                            <br><small class="text-muted">{{ formation.category|default:"Sans catégorie" }}</small>
+                                            <strong>{{ formation.titre }}</strong>
+                                            <br><small class="text-muted">{{ formation.categorie|default:"Sans catégorie" }}</small>
                                         </td>
                                         <td>{{ formation.description|truncatechars:100 }}</td>
-                                        <td>{{ formation.duration|default:"Non définie" }}</td>
+                                        <td>{{ formation.duree|default:"Non définie" }}</td>
                                         <td>
-                                            {% if formation.price %}
-                                                {{ formation.price }} FCFA
+                                            {% if formation.prix %}
+                                                {{ formation.prix }} FCFA
                                             {% else %}
                                                 <span class="text-muted">Non défini</span>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <span class="badge bg-{{ formation.is_active|yesno:'success,secondary' }}">
-                                                {{ formation.is_active|yesno:"Actif,Inactif" }}
+                                            <span class="badge bg-{{ formation.disponible|yesno:'success,secondary' }}">
+                                                {{ formation.disponible|yesno:"Disponible,Non disponible" }}
                                             </span>
                                         </td>
                                         <td>
@@ -246,12 +246,12 @@
                                                         onclick="editFormation({{ formation.id }})" title="Modifier">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-outline-{{ formation.is_active|yesno:'warning,success' }}" 
-                                                        onclick="toggleFormationStatus({{ formation.id }}, {{ formation.is_active|lower }})">
-                                                    <i class="fas fa-{{ formation.is_active|yesno:'pause,play' }}"></i>
+                                                <button type="button" class="btn btn-outline-{{ formation.disponible|yesno:'warning,success' }}" 
+                                                        onclick="toggleFormationStatus({{ formation.id }}, {{ formation.disponible|lower }})">
+                                                    <i class="fas fa-{{ formation.disponible|yesno:'pause,play' }}"></i>
                                                 </button>
                                                 <button type="button" class="btn btn-outline-danger" 
-                                                        onclick="deleteFormation({{ formation.id }}, '{{ formation.title }}')">
+                                                        onclick="deleteFormation({{ formation.id }}, '{{ formation.titre }}')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>

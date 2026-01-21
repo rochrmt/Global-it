@@ -1399,7 +1399,8 @@ def edit_formation(request, formation_id):
         formation.objectifs = request.POST.get('objectifs')
         formation.programme = request.POST.get('programme')
         formation.duree = request.POST.get('duree')
-        formation.prix = float(request.POST.get('prix', 0))
+        prix_str = request.POST.get('prix', '0')
+        formation.prix = float(prix_str) if prix_str else 0.0
         formation.disponible = request.POST.get('disponible') == 'on'
         
         formation.save()
@@ -1410,7 +1411,7 @@ def edit_formation(request, formation_id):
             action='edit',
             object_type='Formation',
             object_id=formation.id,
-            description=f"Formation modifiée: {formation.title}"
+            description=f"Formation modifiée: {formation.titre}"
         )
         
         return JsonResponse({
@@ -1428,6 +1429,9 @@ def edit_formation(request, formation_id):
 def add_formation(request):
     """Ajouter une formation"""
     try:
+        prix_str = request.POST.get('prix', '0')
+        prix = float(prix_str) if prix_str else 0.0
+        
         formation = Formation.objects.create(
             titre=request.POST.get('titre'),
             description=request.POST.get('description'),
@@ -1436,7 +1440,7 @@ def add_formation(request):
             objectifs=request.POST.get('objectifs'),
             programme=request.POST.get('programme'),
             duree=request.POST.get('duree'),
-            prix=float(request.POST.get('prix', 0)),
+            prix=prix,
             disponible=request.POST.get('disponible') == 'on'
         )
         
@@ -1446,7 +1450,7 @@ def add_formation(request):
             action='add',
             object_type='Formation',
             object_id=formation.id,
-            description=f"Formation créée: {formation.title}"
+            description=f"Formation créée: {formation.titre}"
         )
         
         return JsonResponse({
