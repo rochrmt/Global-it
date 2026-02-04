@@ -1,0 +1,122 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}{{ title }} - Dashboard{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ title }}</h5>
+                <a href="{% url 'dashboard:recruitment_manager' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+            <div class="card-body p-4">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-bold">Titre du poste</label>
+                            {{ form.titre }}
+                            {{ form.titre.errors }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Type de contrat</label>
+                            {{ form.type_contrat }}
+                            {{ form.type_contrat.errors }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Lieu</label>
+                            {{ form.lieu }}
+                            {{ form.lieu.errors }}
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Recrutement urgent</label>
+                            <div class="form-check pt-2">
+                                {{ form.urgent }}
+                                <span class="ms-2">Oui</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold">Publier l'offre</label>
+                            <div class="form-check pt-2">
+                                {{ form.est_actif }}
+                                <span class="ms-2">Oui</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Description courte</label>
+                        {{ form.description }}
+                        <small class="text-muted">Apparaît sur les cartes de la page liste.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Missions principales</label>
+                        {{ form.missions }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Profil recherché</label>
+                        {{ form.profil_recherche }}
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Expérience requise</label>
+                            {{ form.experience_min }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Salaire min (€)</label>
+                            {{ form.salaire_min }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Salaire max (€)</label>
+                            {{ form.salaire_max }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date de début début</label>
+                            {{ form.date_debut }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Date limite candidature</label>
+                            {{ form.date_limite }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Avantages</label>
+                        {{ form.avantages }}
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Image de présentation</label>
+                        {% if offre.image %}
+                        <div class="mb-2">
+                            <img src="{{ offre.image.url }}" alt="" style="max-width: 200px; border-radius: 8px;">
+                        </div>
+                        {% endif %}
+                        {{ form.image }}
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Enregistrer l'offre
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

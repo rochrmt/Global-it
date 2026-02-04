@@ -12,6 +12,14 @@ urlpatterns = [
     path('a-propos/', views.about, name='about'),
     path('partenaires/', views.partners, name='partners'),
     
+    # URLs Soumission formulaires
+    path('contact/submit-service/', views.submit_service_request, name='submit_service_request'),
+    path('contact/submit-formation/', views.submit_formation_request, name='submit_formation_request'),
+    
+    # URLs Recrutement
+    path('recrutement/', views.job_offers, name='job_offers'),
+    path('recrutement/offre/<int:pk>/', views.job_offer_detail, name='job_offer_detail'),
+    
     # URLs Admin personnalisées
     path('admin/dashboard/', admin_views.admin_dashboard, name='admin_dashboard'),
     path('admin/system-info/', admin_views.system_info, name='system_info'),

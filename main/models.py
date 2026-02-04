@@ -140,101 +140,6 @@ class SiteConfiguration(models.Model):
         return self.nom
 
 
-class JobOffer(models.Model):
-    """Offres d'emploi"""
-    
-    TYPE_CONTRAT_CHOICES = [
-        ('CDI', 'CDI'),
-        ('CDD', 'CDD'),
-        ('STAGE', 'Stage'),
-        ('ALTERNANCE', 'Alternance'),
-        ('FREELANCE', 'Freelance'),
-        ('INTERIM', 'Intérim'),
-    ]
-    
-    titre = models.CharField(max_length=200, help_text="Titre du poste")
-    description = models.TextField(help_text="Description détaillée du poste")
-    missions = models.TextField(help_text="Principales missions du poste")
-    profil_recherche = models.TextField(help_text="Profil et compétences recherchées")
-    avantages = models.TextField(blank=True, help_text="Avantages proposés")
-    type_contrat = models.CharField(max_length=20, choices=TYPE_CONTRAT_CHOICES, default='CDI')
-    lieu = models.CharField(max_length=100, help_text="Lieu de travail")
-    salaire_min = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Salaire minimum")
-    salaire_max = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Salaire maximum")
-    experience_min = models.CharField(max_length=50, blank=True, help_text="Expérience minimum requise")
-    date_debut = models.DateField(null=True, blank=True, help_text="Date de début souhaitée")
-    date_limite = models.DateField(null=True, blank=True, help_text="Date limite de candidature")
-    est_actif = models.BooleanField(default=True, help_text="Publier cette offre")
-    urgent = models.BooleanField(default=False, help_text="Marquer cette offre comme urgente")
-    ordre = models.IntegerField(default=0, help_text="Ordre d'affichage")
-    date_creation = models.DateTimeField(auto_now_add=True)
-    date_modification = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        ordering = ['-urgent', '-date_creation']
-        verbose_name = 'Offre d\'emploi'
-        verbose_name_plural = 'Offres d\'emploi'
-    
-    def __str__(self):
-        return f"{self.titre} - {self.type_contrat}"
-    
-    @property
-    def is_expired(self):
-        """Vérifie si l'offre est expirée"""
-        if self.date_limite:
-            return timezone.now().date() > self.date_limite
-        return False
-
-
-class JobApplication(models.Model):
-    """Candidatures aux offres d'emploi"""
-    
-    STATUT_CHOICES = [
-        ('NOUVELLE', 'Nouvelle'),
-        ('EN_COURS', 'En cours de traitement'),
-        ('ENTRETIEN', 'Entretien programmé'),
-        ('ACCEPTEE', 'Acceptée'),
-        ('REFUSEE', 'Refusée'),
-        ('ARCHIVEE', 'Archivée'),
-    ]
-    
-    job_offer = models.ForeignKey(JobOffer, on_delete=models.CASCADE, related_name='applications')
-    nom = models.CharField(max_length=100)
-    prenom = models.CharField(max_length=100)
-    email = models.EmailField()
-    telephone = models.CharField(max_length=20, blank=True)
-    adresse = models.TextField(blank=True)
-    date_naissance = models.DateField(null=True, blank=True)
-    experience = models.TextField(help_text="Expérience professionnelle")
-    formations = models.TextField(blank=True, help_text="Formations et diplômes")
-    competences = models.TextField(blank=True, help_text="Compétences techniques")
-    motivations = models.TextField(help_text="Lettre de motivation")
-    salaire_attendu = models.CharField(max_length=50, blank=True, help_text="Prétentions salariales")
-    disponibilite = models.CharField(max_length=100, blank=True, help_text="Disponibilité")
-    cv = models.FileField(upload_to='candidatures/cv/', 
-                         validators=[FileExtensionValidator(['pdf', 'doc', 'docx'])],
-                         help_text="Formats acceptés : PDF, DOC, DOCX")
-    lettre_motivation = models.FileField(upload_to='candidatures/lm/', 
-                                        validators=[FileExtensionValidator(['pdf', 'doc', 'docx'])],
-                                        blank=True, null=True,
-                                        help_text="Lettre de motivation (optionnelle)")
-    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='NOUVELLE')
-    notes = models.TextField(blank=True, help_text="Notes internes")
-    date_creation = models.DateTimeField(auto_now_add=True)
-    date_modification = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        ordering = ['-date_creation']
-        verbose_name = 'Candidature'
-        verbose_name_plural = 'Candidatures'
-    
-    def __str__(self):
-        return f"{self.prenom} {self.nom} - {self.job_offer.titre}"
-    
-    @property
-    def full_name(self):
-        return f"{self.prenom} {self.nom}"
-
 
 class CarouselImage(models.Model):
     """Images du carousel de la page d'accueil"""
@@ -336,3 +241,125 @@ class Partner(models.Model):
     
     def __str__(self):
         return self.nom
+
+
+class OffreEmploi(models.Model):
+    """Offres d'emploi"""
+    
+    TYPE_CONTRAT_CHOICES = [
+        ('cdi', 'CDI'),
+        ('cdd', 'CDD'),
+        ('stage', 'Stage'),
+        ('alternance', 'Alternance'),
+        ('freelance', 'Freelance'),
+    ]
+    
+    titre = models.CharField(max_length=200, verbose_name="Titre du poste")
+    description = models.TextField(verbose_name="Description du poste")
+    type_contrat = models.CharField(max_length=20, choices=TYPE_CONTRAT_CHOICES, default='cdi', verbose_name="Type de contrat")
+    lieu = models.CharField(max_length=200, verbose_name="Lieu de travail")
+    missions = models.TextField(verbose_name="Missions principales")
+    profil_recherche = models.TextField(verbose_name="Profil recherché")
+    experience_min = models.CharField(max_length=100, blank=True, verbose_name="Expérience minimale", help_text="Ex: 2 ans, Débutant accepté")
+    salaire_min = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Salaire minimum (€)")
+    salaire_max = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Salaire maximum (€)")
+    date_debut = models.DateField(blank=True, null=True, verbose_name="Date de début souhaitée")
+    date_limite = models.DateField(blank=True, null=True, verbose_name="Date limite de candidature")
+    avantages = models.TextField(blank=True, verbose_name="Avantages", help_text="Tickets restaurant, télétravail, etc.")
+    image = models.ImageField(upload_to='job_offers/', blank=True, null=True, 
+                             validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp'])],
+                             help_text="Image de présentation de l'offre")
+    urgent = models.BooleanField(default=False, verbose_name="Recrutement urgent")
+    est_actif = models.BooleanField(default=True, verbose_name="Offre active")
+    date_creation = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    date_modification = models.DateTimeField(auto_now=True, verbose_name="Date de modification")
+    
+    class Meta:
+        ordering = ['-urgent', '-date_creation']
+        verbose_name = 'Offre d\'emploi'
+        verbose_name_plural = 'Offres d\'emploi'
+    
+    def __str__(self):
+        return f"{self.titre} ({self.get_type_contrat_display()})"
+    
+    def nb_candidatures(self):
+        """Retourne le nombre de candidatures pour cette offre"""
+        return self.candidatures.count()
+
+
+class Candidature(models.Model):
+    """Candidatures pour les offres d'emploi"""
+    
+    STATUT_CHOICES = [
+        ('nouvelle', 'Nouvelle'),
+        ('en_cours', 'En cours d\'examen'),
+        ('acceptee', 'Acceptée'),
+        ('rejetee', 'Rejetée'),
+    ]
+    
+    offre_emploi = models.ForeignKey(OffreEmploi, on_delete=models.CASCADE, related_name='candidatures', verbose_name="Offre d'emploi")
+    nom = models.CharField(max_length=100, verbose_name="Nom")
+    prenom = models.CharField(max_length=100, verbose_name="Prénom")
+    email = models.EmailField(verbose_name="Email")
+    telephone = models.CharField(max_length=20, blank=True, verbose_name="Téléphone")
+    motivation = models.TextField(verbose_name="Lettre de motivation")
+    cv = models.FileField(upload_to='cv/', 
+                         validators=[FileExtensionValidator(['pdf', 'doc', 'docx'])],
+                         verbose_name="CV",
+                         help_text="Formats acceptés: PDF, DOC, DOCX (max 5MB)")
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='nouvelle', verbose_name="Statut")
+    notes_admin = models.TextField(blank=True, verbose_name="Notes internes", help_text="Visibles uniquement par les administrateurs")
+    date_candidature = models.DateTimeField(auto_now_add=True, verbose_name="Date de candidature")
+    date_modification = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
+    
+    class Meta:
+        ordering = ['-date_candidature']
+        verbose_name = 'Candidature'
+        verbose_name_plural = 'Candidatures'
+    
+    def __str__(self):
+        return f"{self.nom} {self.prenom} - {self.offre_emploi.titre}"
+    
+    def get_cv_filename(self):
+        """Retourne le nom du fichier CV"""
+        import os
+        return os.path.basename(self.cv.name) if self.cv else ''
+
+
+class CandidatureSpontanee(models.Model):
+    """Candidatures spontanées"""
+    
+    STATUT_CHOICES = [
+        ('nouvelle', 'Nouvelle'),
+        ('en_cours', 'En cours d\'examen'),
+        ('acceptee', 'Acceptée'),
+        ('rejetee', 'Rejetée'),
+    ]
+    
+    nom = models.CharField(max_length=100, verbose_name="Nom")
+    prenom = models.CharField(max_length=100, verbose_name="Prénom")
+    email = models.EmailField(verbose_name="Email")
+    telephone = models.CharField(max_length=20, blank=True, verbose_name="Téléphone")
+    poste_souhaite = models.CharField(max_length=200, verbose_name="Poste souhaité")
+    motivation = models.TextField(verbose_name="Lettre de motivation")
+    cv = models.FileField(upload_to='cv/', 
+                         validators=[FileExtensionValidator(['pdf', 'doc', 'docx'])],
+                         verbose_name="CV",
+                         help_text="Formats acceptés: PDF, DOC, DOCX (max 5MB)")
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='nouvelle', verbose_name="Statut")
+    notes_admin = models.TextField(blank=True, verbose_name="Notes internes", help_text="Visibles uniquement par les administrateurs")
+    date_candidature = models.DateTimeField(auto_now_add=True, verbose_name="Date de candidature")
+    date_modification = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
+    
+    class Meta:
+        ordering = ['-date_candidature']
+        verbose_name = 'Candidature spontanée'
+        verbose_name_plural = 'Candidatures spontanées'
+    
+    def __str__(self):
+        return f"{self.nom} {self.prenom} - {self.poste_souhaite}"
+    
+    def get_cv_filename(self):
+        """Retourne le nom du fichier CV"""
+        import os
+        return os.path.basename(self.cv.name) if self.cv else ''

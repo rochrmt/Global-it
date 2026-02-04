@@ -5,7 +5,8 @@
 
 {% block content %}
 <!-- Page Header -->
-<section class="page-header bg-primary-custom text-white " style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+<section class="page-header bg-primary-custom text-white "
+    style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
     <div class="container">
         <div class="row">
             <div class="col-lg-8">
@@ -13,11 +14,14 @@
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white">Accueil</a></li>
                         <li class="breadcrumb-item"><a href="{% url 'services' %}" class="text-white">Services</a></li>
-                        <li class="display-4 fw-bold" data-aos="fade-right" data-aos-delay="100">{{ service.titre }}</li>
+                        <li class="display-4 fw-bold" data-aos="fade-right" data-aos-delay="100">{{ service.titre }}
+                        </li>
                     </ol>
                 </nav>
-                <h1 class="display-5 fw-bold text-white" data-aos="fade-right" data-aos-delay="100">{{ service.titre }}</h1>
-                <p class="lead text-white" data-aos="fade-right" data-aos-delay="200">{{ service.description_courte }}</p>
+                <h1 class="display-5 fw-bold text-white" data-aos="fade-right" data-aos-delay="100">{{ service.titre }}
+                </h1>
+                <p class="lead text-white" data-aos="fade-right" data-aos-delay="200">{{ service.description_courte }}
+                </p>
             </div>
         </div>
     </div>
@@ -38,7 +42,8 @@
                     </div>
                     {% else %}
                     <div class="service-main-image mb-4">
-                        <div class="service-icon-placeholder-large rounded d-flex align-items-center justify-content-center" style="height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                        <div class="service-icon-placeholder-large rounded d-flex align-items-center justify-content-center"
+                            style="height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
                             <i class="fas {{ service.icone }}" style="font-size: 100px;"></i>
                         </div>
                     </div>
@@ -47,17 +52,19 @@
                         {{ service.description|linebreaks }}
                     </div>
                 </div>
-                
+
                 <!-- CTA -->
                 <div class="service-cta mt-5 p-4 bg-light rounded">
                     <h4 class="mb-3">Intéressé par ce service ?</h4>
-                    <p class="text-muted mb-4">Contactez-nous pour discuter de votre projet et obtenir un devis personnalisé.</p>
-                    <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">
+                    <p class="text-muted mb-4">Contactez-nous pour discuter de votre projet et obtenir un devis
+                        personnalisé.</p>
+                    <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal"
+                        data-bs-target="#serviceRequestModal">
                         <i class="fas fa-comments me-2"></i>Demander un devis
-                    </a>
+                    </button>
                 </div>
             </div>
-            
+
             <div class="col-lg-4" data-aos="fade-left">
                 <div class="service-sidebar">
                     <!-- Service Features -->
@@ -70,18 +77,20 @@
                                 <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Experts certifiés</li>
                                 <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Solutions sur-mesure</li>
                                 <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Support 24/7</li>
-                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Garantie satisfaction</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Garantie satisfaction
+                                </li>
                             </ul>
                         </div>
                     </div>
-                    
+
                     <!-- Contact Info -->
                     <div class="card">
                         <div class="card-header bg-dark text-white">
                             <h5 class="mb-0"><i class="fas fa-phone me-2"></i>Contact rapide</h5>
                         </div>
                         <div class="card-body">
-                            <p class="mb-2"><i class="fas fa-envelope text-primary-custom me-2"></i>info@global-it.ca</p>
+                            <p class="mb-2"><i class="fas fa-envelope text-primary-custom me-2"></i>info@global-it.ca
+                            </p>
                             <p class="mb-2"><i class="fas fa-phone text-primary-custom me-2"></i>+236 72 77 08 08</p>
                             <p class="mb-0"><i class="fas fa-clock text-primary-custom me-2"></i>Lun-Ven: 8h-18h</p>
                         </div>
@@ -91,6 +100,123 @@
         </div>
     </div>
 </section>
+
+<!-- Service Request Modal -->
+<div class="modal fade" id="serviceRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary-custom text-white">
+                <h5 class="modal-title">Demande de devis - {{ service.titre }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="serviceRequestForm" method="post" action="{% url 'submit_service_request' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="service_id" value="{{ service.pk }}">
+                    <input type="hidden" name="sujet" value="Demande de devis: {{ service.titre }}">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nom complet *</label>
+                            <input type="text" name="nom" class="form-control" required placeholder="Votre nom">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" class="form-control" required
+                                placeholder="votre@email.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" name="telephone" class="form-control" placeholder="06...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Message *</label>
+                            <textarea name="message" class="form-control" rows="4" required
+                                placeholder="Décrivez votre projet ou vos besoins..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="button" id="submitServiceRequest" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Envoyer la demande
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const submitBtn = document.getElementById('submitServiceRequest');
+        const form = document.getElementById('serviceRequestForm');
+
+        submitBtn.addEventListener('click', function () {
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Disable button
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi en cours...';
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('serviceRequestModal'));
+                        modal.hide();
+
+                        // Show success toast (using main.js function)
+                        if (typeof showToast === 'function') {
+                            showToast(data.message, 'success');
+                        } else {
+                            alert(data.message);
+                        }
+                        form.reset();
+                    } else {
+                        // Show error
+                        let errorMsg = 'Une erreur est survenue.';
+                        if (data.errors) {
+                            try {
+                                const errors = JSON.parse(data.errors);
+                                errorMsg = Object.values(errors).flat().join('\n');
+                            } catch (e) { }
+                        }
+                        if (typeof showToast === 'function') {
+                            showToast(errorMsg, 'error');
+                        } else {
+                            alert(errorMsg);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (typeof showToast === 'function') {
+                        showToast('Erreur de connexion serveur', 'error');
+                    }
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
+        });
+    });
+</script>
 
 <!-- Related Services -->
 {% if autres_services %}

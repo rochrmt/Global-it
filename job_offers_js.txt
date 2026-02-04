@@ -1,0 +1,60 @@
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('#candidature-spontanee form');
+    if (!form) return;
+    
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalBtnContent = submitBtn.innerHTML;
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validation basique
+        if (!form.checkValidity()) {
+            form.classList.add('was-validated');
+            return;
+        }
+
+        // Désactiver le bouton
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+
+        const formData = new FormData(form);
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Succès
+                showToast(data.message, 'success');
+                
+                // Reset form
+                form.reset();
+                form.classList.remove('was-validated');
+            } else {
+                // Erreur serveur (validation)
+                showToast("Erreur lors de l'envoi. Veuillez vérifier les champs.", 'error');
+                console.error(data.errors);
+            }
+        })
+        .catch(error => {
+            showToast("Une erreur réseau est survenue.", 'error');
+            console.error(error);
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnContent;
+        });
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des candidatures - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-users me-2"></i>
+                    Gestion des candidatures
+                </h1>
+                <div>
+                    <a href="{% url 'job_offer_management' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-briefcase me-2"></i>
+                        Gérer les offres
+                    </a>
+                </div>
+            </div>
+
+            <!-- Statistiques -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Candidatures aux offres
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_job_applications }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-briefcase fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6 mb-4">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Nouvelles candidatures
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ new_job_applications }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-envelope fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <!-- Filtres -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Filtres</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="type" class="form-label">Type de candidature</label>
+                            <select name="type" id="type" class="form-select">
+                                <option value="all" {% if filter_type == 'all' %}selected{% endif %}>Toutes</option>
+                                <option value="job" {% if filter_type == 'job' %}selected{% endif %}>Candidatures aux offres</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="status" class="form-label">Statut</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="all" {% if filter_status == 'all' %}selected{% endif %}>Tous</option>
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if filter_status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-filter me-2"></i>Filtrer
+                            </button>
+                            <a href="{% url 'application_management' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Réinitialiser
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Candidatures aux offres -->
+            {% if job_applications %}
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-briefcase me-2"></i>
+                        Candidatures aux offres d'emploi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Email</th>
+                                    <th>Offre</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in job_applications %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ application.prenom }} {{ application.nom }}</strong>
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ application.email }}">{{ application.email }}</a>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'job_offer_detail' application.job_offer.pk %}" target="_blank">
+                                            {{ application.job_offer.titre }}
+                                        </a>
+                                    </td>
+                                    <td>{{ application.date_creation|date:"d/m/Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if application.statut == 'NOUVELLE' %}primary{% elif application.statut == 'EN_COURS' %}warning{% elif application.statut == 'ENTRETIEN' %}info{% elif application.statut == 'ACCEPTEE' %}success{% elif application.statut == 'REFUSEE' %}danger{% else %}secondary{% endif %}">
+                                            {{ application.get_statut_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'application_detail' application.pk %}?type=job" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if not job_applications %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-5x text-muted mb-4"></i>
+                <h4>Aucune candidature</h4>
+                <p class="text-muted">
+                    Aucune candidature n'a été reçue pour le moment.
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: #4e73df;
+}
+
+.badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+}
+</style>
+{% endblock %}

@@ -98,5 +98,18 @@ urlpatterns = [
     path('files/create-folder/', views.create_folder, name='create_folder'),
     path('files/<int:file_id>/delete/', views.delete_file, name='delete_file'),
     
-    # Gestion du recrutement - SUPPRIMÉ
+    # Gestion du recrutement
+    path('recruitment/', views.recruitment_manager, name='recruitment_manager'),
+    path('recruitment/jobs/add/', views.add_job_offer, name='add_job_offer'),
+    path('recruitment/jobs/<int:pk>/edit/', views.edit_job_offer, name='edit_job_offer'),
+    path('recruitment/jobs/<int:pk>/delete/', views.delete_job_offer, name='delete_job_offer'),
+    path('recruitment/jobs/<int:pk>/toggle/', views.toggle_job_offer_status, name='toggle_job_offer_status'),
+    path('recruitment/applications/<int:pk>/', views.view_application, name='view_application'),
+    path('recruitment/applications/<int:pk>/<str:type>/', views.view_application, name='view_application'),
+    path('recruitment/applications/<int:pk>/status/', views.update_application_status, name='update_application_status'),
+    path('recruitment/applications/<int:pk>/delete/', views.delete_application, name='delete_application'),
+    
+    # Gestion des demandes (Services/Formations/Contact)
+    path('requests/', views.request_manager, name='request_manager'),
+    path('requests/<int:pk>/', views.request_detail, name='request_detail'),
 ]

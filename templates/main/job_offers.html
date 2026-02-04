@@ -1,0 +1,327 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Offres d'emploi - {{ site_config.nom_site }}{% endblock %}
+{% block meta_description %}Découvrez nos offres d'emploi et rejoignez notre équipe. Postulez en ligne ou envoyez une
+candidature spontanée.{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-header bg-primary-custom text-white" style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 fw-bold mb-3" data-aos="fade-up">Rejoignez notre équipe</h1>
+                <p class="lead mb-4" data-aos="fade-up" data-aos-delay="100">
+                    Découvrez nos opportunités de carrière et contribuez à transformer le monde numérique avec nous.
+                </p>
+                <div data-aos="fade-up" data-aos-delay="200">
+                    <a href="#offres" class="btn btn-light btn-lg me-3">Voir nos offres</a>
+                    <a href="#candidature-spontanee" class="btn btn-outline-light btn-lg">Candidature spontanée</a>
+                </div>
+            </div>
+            <div class="col-lg-4 text-center" data-aos="fade-left">
+                <i class="fas fa-briefcase fa-10x opacity-25"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Job Offers Section -->
+<section id="offres" class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title">Nos offres d'emploi</h2>
+                <p class="section-subtitle">Rejoignez une entreprise innovante et dynamique</p>
+            </div>
+        </div>
+
+        {% if job_offers %}
+        <div class="row">
+            {% for offer in job_offers %}
+            <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                <div class="card job-offer-card h-100 shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title">{{ offer.titre }}</h5>
+                            {% if offer.urgent %}
+                            <span class="badge bg-danger">Urgent</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="job-details mb-3">
+                            <p class="mb-2">
+                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                {{ offer.lieu }}
+                            </p>
+                            <p class="mb-2">
+                                <i class="fas fa-file-contract text-primary me-2"></i>
+                                {{ offer.get_type_contrat_display }}
+                            </p>
+                            {% if offer.salaire_min or offer.salaire_max %}
+                            <p class="mb-2">
+                                <i class="fas fa-euro-sign text-primary me-2"></i>
+                                {% if offer.salaire_min and offer.salaire_max %}
+                                {{ offer.salaire_min }} - {{ offer.salaire_max }} €
+                                {% elif offer.salaire_min %}
+                                À partir de {{ offer.salaire_min }} €
+                                {% else %}
+                                Jusqu'à {{ offer.salaire_max }} €
+                                {% endif %}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <p class="card-text">
+                            {{ offer.description|truncatewords:30 }}
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                Publié le {{ offer.date_creation|date:"d/m/Y" }}
+                            </small>
+                            <a href="{% url 'job_offer_detail' offer.pk %}" class="btn btn-primary">
+                                Voir l'offre <i class="fas fa-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="row">
+            <div class="col-12 text-center" data-aos="fade-up">
+                <div class="empty-state">
+                    <i class="fas fa-briefcase fa-5x text-muted mb-4"></i>
+                    <h4>Aucune offre disponible</h4>
+                    <p class="text-muted mb-4">
+                        Aucune offre d'emploi n'est disponible pour le moment, mais vous pouvez envoyer une candidature
+                        spontanée.
+                    </p>
+                    <a href="#candidature-spontanee" class="btn btn-primary">Candidature spontanée</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Spontaneous Application Section -->
+<section id="candidature-spontanee" class="bg-light py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-12 text-center mb-5" data-aos="fade-up">
+                <h2 class="section-title">Vous ne trouvez pas l'offre idéale ?</h2>
+                <p class="section-subtitle">
+                    Envoyez-nous une candidature spontanée ! Nous sommes toujours à la recherche de talents.
+                </p>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up" data-aos-delay="100">
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+                        <h4 class="mb-4">
+                            <i class="fas fa-user-plus text-primary me-2"></i>
+                            Formulaire de candidature spontanée
+                        </h4>
+
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <input type="hidden" name="spontaneous_submit" value="1">
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ spontaneous_form.nom.label_tag }}
+                                    {{ spontaneous_form.nom }}
+                                    {% if spontaneous_form.nom.errors %}
+                                    <div class="text-danger small">{{ spontaneous_form.nom.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ spontaneous_form.prenom.label_tag }}
+                                    {{ spontaneous_form.prenom }}
+                                    {% if spontaneous_form.prenom.errors %}
+                                    <div class="text-danger small">{{ spontaneous_form.prenom.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    {{ spontaneous_form.email.label_tag }}
+                                    {{ spontaneous_form.email }}
+                                    {% if spontaneous_form.email.errors %}
+                                    <div class="text-danger small">{{ spontaneous_form.email.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    {{ spontaneous_form.telephone.label_tag }}
+                                    {{ spontaneous_form.telephone }}
+                                    {% if spontaneous_form.telephone.errors %}
+                                    <div class="text-danger small">{{ spontaneous_form.telephone.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                {{ spontaneous_form.poste_souhaite.label_tag }}
+                                {{ spontaneous_form.poste_souhaite }}
+                                {% if spontaneous_form.poste_souhaite.errors %}
+                                <div class="text-danger small">{{ spontaneous_form.poste_souhaite.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ spontaneous_form.motivation.label_tag }}
+                                {{ spontaneous_form.motivation }}
+                                {% if spontaneous_form.motivation.errors %}
+                                <div class="text-danger small">{{ spontaneous_form.motivation.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ spontaneous_form.cv.label_tag }}
+                                {{ spontaneous_form.cv }}
+                                {% if spontaneous_form.cv.errors %}
+                                <div class="text-danger small">{{ spontaneous_form.cv.errors }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    Formats acceptés : PDF, DOC, DOCX (max 5MB)
+                                </small>
+                            </div>
+
+                            <button type="button" id="submit-spontaneous" class="btn btn-primary btn-lg w-100">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Envoyer ma candidature
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .job-offer-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: none;
+        border-radius: 15px;
+    }
+
+    .job-offer-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .job-details p {
+        font-size: 0.9rem;
+    }
+
+    .empty-state {
+        padding: 60px 20px;
+    }
+
+    .hero-section {
+        background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-primary-dark) 100%);
+        margin-top: 76px;
+        /* Hauteur de la navbar */
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--bs-dark);
+        margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.2rem;
+        color: var(--bs-secondary);
+        margin-bottom: 3rem;
+    }
+</style>
+{% endblock %}
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('#candidature-spontanee form');
+        if (!form) return;
+
+        const submitBtn = document.getElementById('submit-spontaneous');
+        if (!submitBtn) return;
+
+        const originalBtnContent = submitBtn.innerHTML;
+
+        submitBtn.addEventListener('click', function () {
+            // Validation basique
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            // Trigger form submission
+            form.requestSubmit();
+        });
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // Validation basique (double check)
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+
+            // Désactiver le bouton
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi...';
+
+            const formData = new FormData(form);
+            formData.append('spontaneous_submit', 'true');
+
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erreur serveur');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        // Succès
+                        showToast(data.message, 'success');
+
+                        // Reset form
+                        form.reset();
+                        form.classList.remove('was-validated');
+                    } else {
+                        // Erreur serveur (validation)
+                        showToast("Erreur lors de l'envoi. Veuillez vérifier les champs.", 'error');
+                        console.error(data.errors);
+                    }
+                })
+                .catch(error => {
+                    showToast("Une erreur réseau est survenue.", 'error');
+                    console.error(error);
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnContent;
+                });
+        });
+    });
+</script>
+{% endblock %}

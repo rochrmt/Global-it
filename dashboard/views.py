@@ -9,6 +9,7 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Q
+from django.core.paginator import Paginator
 import os
 import json
 import time
@@ -17,7 +18,11 @@ from io import BytesIO
 
 from .models import StaticImage, DashboardActivity, SiteSettings, ImageCategory
 from .forms import PartnerForm
-from main.models import Service, Formation, SiteConfiguration, CarouselImage, AboutImage, Partner
+from main.models import (
+    Service, Formation, SiteConfiguration, CarouselImage, AboutImage, Partner,
+    OffreEmploi, Candidature, CandidatureSpontanee
+)
+from main.forms import OffreEmploiForm
 from .utils import (
     sync_dashboard_image_to_service,
     sync_dashboard_image_to_formation,
@@ -1877,3 +1882,226 @@ def toggle_partner_status(request, partner_id):
             messages.error(request, f'Erreur: {str(e)}')
     
     return redirect('dashboard:partner_manager')
+# --- Gestion du Recrutement ---
+
+@login_required
+def recruitment_manager(request):
+    """Tableau de bord pour la gestion du recrutement"""
+    offres = OffreEmploi.objects.all().order_by('-date_creation')
+    candidatures = Candidature.objects.all().order_by('-date_candidature')
+    candidatures_spontanees = CandidatureSpontanee.objects.all().order_by('-date_candidature')
+    
+    context = {
+        'job_offers': offres,
+        'applications': candidatures,
+        'spontaneous_applications': candidatures_spontanees,
+        'total_offers': offres.count(),
+        'total_applications': candidatures.count() + candidatures_spontanees.count(),
+        'new_applications': (
+            candidatures.filter(statut='nouvelle').count() + 
+            candidatures_spontanees.filter(statut='nouvelle').count()
+        )
+    }
+    return render(request, 'dashboard/recruitment_manager.html', context)
+
+
+@login_required
+def add_job_offer(request):
+    """Ajouter une offre d'emploi"""
+    if request.method == 'POST':
+        form = OffreEmploiForm(request.POST, request.FILES)
+        if form.is_valid():
+            offre = form.save()
+            DashboardActivity.objects.create(
+                user=request.user,
+                action='add',
+                object_type='OffreEmploi',
+                object_id=offre.id,
+                description=f"Nouvelle offre d'emploi : {offre.titre}"
+            )
+            messages.success(request, "L'offre d'emploi a été créée avec succès.")
+            return redirect('dashboard:recruitment_manager')
+    else:
+        form = OffreEmploiForm()
+        
+    return render(request, 'dashboard/job_offer_form.html', {'form': form, 'title': "Ajouter une offre"})
+
+
+@login_required
+def edit_job_offer(request, pk):
+    """Modifier une offre d'emploi"""
+    offre = get_object_or_404(OffreEmploi, pk=pk)
+    if request.method == 'POST':
+        form = OffreEmploiForm(request.POST, request.FILES, instance=offre)
+        if form.is_valid():
+            form.save()
+            DashboardActivity.objects.create(
+                user=request.user,
+                action='edit',
+                object_type='OffreEmploi',
+                object_id=offre.id,
+                description=f"Offre d'emploi modifiée : {offre.titre}"
+            )
+            messages.success(request, "L'offre a été mise à jour.")
+            return redirect('dashboard:recruitment_manager')
+    else:
+        form = OffreEmploiForm(instance=offre)
+        
+    return render(request, 'dashboard/job_offer_form.html', {'form': form, 'title': "Modifier l'offre", 'offre': offre})
+
+
+@login_required
+@require_POST
+def delete_job_offer(request, pk):
+    """Supprimer une offre d'emploi"""
+    offre = get_object_or_404(OffreEmploi, pk=pk)
+    titre = offre.titre
+    offre.delete()
+    DashboardActivity.objects.create(
+        user=request.user,
+        action='delete',
+        object_type='OffreEmploi',
+        object_id=pk,
+        description=f"Offre d'emploi supprimée : {titre}"
+    )
+    return JsonResponse({'success': True})
+
+
+@login_required
+@require_POST
+def toggle_job_offer_status(request, pk):
+    """Activer/désactiver une offre"""
+    offre = get_object_or_404(OffreEmploi, pk=pk)
+    offre.est_actif = not offre.est_actif
+    offre.save()
+    DashboardActivity.objects.create(
+        user=request.user,
+        action='toggle',
+        object_type='OffreEmploi',
+        object_id=offre.id,
+        description=f"Statut offre '{offre.titre}' changé : {'Active' if offre.est_actif else 'Inactive'}"
+    )
+    return JsonResponse({'success': True, 'is_active': offre.est_actif})
+
+
+@login_required
+def view_application(request, pk, type='normal'):
+    """Voir le détail d'une candidature"""
+    if type == 'spontaneous':
+        application = get_object_or_404(CandidatureSpontanee, pk=pk)
+    else:
+        application = get_object_or_404(Candidature, pk=pk)
+        
+    return render(request, 'dashboard/application_detail.html', {
+        'application': application,
+        'type': type
+    })
+
+
+@login_required
+@require_POST
+def update_application_status(request, pk):
+    """Mettre à jour le statut d'une candidature"""
+    type = request.POST.get('type', 'normal')
+    new_status = request.POST.get('status')
+    notes = request.POST.get('notes', '')
+    
+    if type == 'spontaneous':
+        application = get_object_or_404(CandidatureSpontanee, pk=pk)
+    else:
+        application = get_object_or_404(Candidature, pk=pk)
+        
+    application.statut = new_status
+    application.notes_admin = notes
+    application.save()
+    
+    DashboardActivity.objects.create(
+        user=request.user,
+        action='edit',
+        object_type='Candidature' if type == 'normal' else 'CandidatureSpontanee',
+        object_id=application.id,
+        description=f"Statut candidature de {application.prenom} {application.nom} mis à jour : {new_status}"
+    )
+    
+    messages.success(request, "La candidature a été mise à jour.")
+    return redirect('dashboard:view_application', pk=pk, type=type)
+
+
+@login_required
+@require_POST
+def delete_application(request, pk):
+    """Supprimer une candidature"""
+    type = request.POST.get('type', 'normal')
+    if type == 'spontaneous':
+        application = get_object_or_404(CandidatureSpontanee, pk=pk)
+    else:
+        application = get_object_or_404(Candidature, pk=pk)
+    
+    nom = f"{application.prenom} {application.nom}"
+    application.delete()
+    
+    DashboardActivity.objects.create(
+        user=request.user,
+        action='delete',
+        object_type='Candidature' if type == 'normal' else 'CandidatureSpontanee',
+        object_id=pk,
+        description=f"Candidature de {nom} supprimée"
+    )
+    
+    return JsonResponse({'success': True})
+
+@login_required
+def request_manager(request):
+    """Vue pour gérer toutes les demandes (Services, Formations, Contact)"""
+    from main.models import Contact
+    
+    demandes = Contact.objects.all().order_by('-date_creation')
+    
+    # Filtrage par statut
+    statut = request.GET.get('statut')
+    if statut == 'traite':
+        demandes = demandes.filter(traite=True)
+    elif statut == 'non_traite':
+        demandes = demandes.filter(traite=False)
+        
+    # Filtrage par type
+    type_demande = request.GET.get('type')
+    if type_demande == 'service':
+        demandes = demandes.filter(service_interesse__isnull=False)
+    elif type_demande == 'formation':
+        demandes = demandes.filter(formation_interessee__isnull=False)
+    elif type_demande == 'contact':
+        demandes = demandes.filter(service_interesse__isnull=True, formation_interessee__isnull=True)
+    
+    # Pagination
+    paginator = Paginator(demandes, 20)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    context = {
+        'page_obj': page_obj,
+        'current_statut': statut,
+        'current_type': type_demande,
+    }
+    return render(request, 'dashboard/request_manager.html', context)
+
+@login_required
+def request_detail(request, pk):
+    """Détail d'une demande avec possibilité de changer le statut"""
+    from main.models import Contact
+    
+    demande = get_object_or_404(Contact, pk=pk)
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'toggle_status':
+            demande.traite = not demande.traite
+            demande.save()
+            status_msg = "traitée" if demande.traite else "non traitée"
+            messages.success(request, f"La demande a été marquée comme {status_msg}.")
+            return redirect('dashboard:request_detail', pk=pk)
+            
+    context = {
+        'demande': demande,
+    }
+    return render(request, 'dashboard/request_detail.html', context)

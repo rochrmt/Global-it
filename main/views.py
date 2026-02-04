@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
@@ -116,9 +117,22 @@ def contact(request):
             except:
                 pass
             
+            # Si c'est une requête AJAX, retourner JSON
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Votre message a été envoyé avec succès ! Nous vous répondrons rapidement.'
+                })
+            
             messages.success(request, 'Votre message a été envoyé avec succès ! Nous vous répondrons rapidement.')
             return redirect('contact')
     else:
+        # Si c'est une requête AJAX POST avec erreurs, retourner les erreurs en JSON
+        if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'errors': form.errors.as_json()
+            }, status=400)
         form = ContactForm()
     
     context = {
@@ -145,3 +159,128 @@ def partners(request):
         'partners': partners,
     }
     return render(request, 'main/partners.html', context)
+
+
+def job_offers(request):
+    """Page des offres d'emploi avec candidatures spontanées"""
+    from .models import OffreEmploi
+    from .forms import CandidatureSpontaneeForm
+    
+    # Récupérer les offres actives
+    offres = OffreEmploi.objects.filter(est_actif=True).order_by('-urgent', '-date_creation')
+    
+    # Filtrage par type de contrat
+    type_contrat = request.GET.get('type_contrat')
+    if type_contrat:
+        offres = offres.filter(type_contrat=type_contrat)
+    
+    # Traiter le formulaire de candidature spontanée
+    spontaneous_form = CandidatureSpontaneeForm()
+    if request.method == 'POST' and 'spontaneous_submit' in request.POST:
+        spontaneous_form = CandidatureSpontaneeForm(request.POST, request.FILES)
+        if spontaneous_form.is_valid():
+            candidature = spontaneous_form.save()
+            msg = 'Votre candidature spontanée a été envoyée avec succès ! Nous vous contacterons bientôt.'
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': msg})
+            messages.success(request, msg)
+            return redirect('job_offers')
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': spontaneous_form.errors.as_json()}, status=400)
+    
+    context = {
+        'job_offers': offres,
+        'spontaneous_form': spontaneous_form,
+        'type_contrat_choices': OffreEmploi.TYPE_CONTRAT_CHOICES,
+    }
+    return render(request, 'main/job_offers.html', context)
+
+
+def job_offer_detail(request, pk):
+    """Page de détail d'une offre d'emploi + formulaire de candidature"""
+    from .models import OffreEmploi
+    from .forms import CandidatureForm
+    
+    offre = get_object_or_404(OffreEmploi, pk=pk, est_actif=True)
+    
+    if request.method == 'POST':
+        form = CandidatureForm(request.POST, request.FILES)
+        if form.is_valid():
+            candidature = form.save(commit=False)
+            candidature.offre_emploi = offre
+            candidature.save()
+            msg = 'Votre candidature a été envoyée avec succès ! Nous examinerons votre profil attentivement.'
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'message': msg})
+            messages.success(request, msg)
+            return redirect('job_offer_detail', pk=pk)
+        else:
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+    else:
+        form = CandidatureForm()
+    
+    # Autres offres similaires
+    autres_offres = OffreEmploi.objects.filter(
+        est_actif=True,
+        type_contrat=offre.type_contrat
+    ).exclude(pk=pk)[:3]
+    
+    context = {
+        'job_offer': offre,
+        'form': form,
+        'autres_offres': autres_offres,
+    }
+    return render(request, 'main/job_offer_detail.html', context)
+
+
+
+def submit_service_request(request):
+    """Traitement AJAX de la demande de devis service"""
+    from .forms import ContactForm
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            contact = form.save()
+            # Send email (omitted for brevity, covered by save signal or general logic)
+             # Envoyer un email
+            try:
+                send_mail(
+                    f'Nouvelle demande de devis - {contact.nom}',
+                    f'Nom: {contact.nom}\nEmail: {contact.email}\nTéléphone: {contact.telephone}\nService: {contact.service_interesse.titre}\n\nSujet: {contact.sujet}\n\nMessage:\n{contact.message}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [settings.CONTACT_EMAIL],
+                    fail_silently=True,
+                )
+            except:
+                pass
+            
+            return JsonResponse({'success': True, 'message': 'Votre demande de devis a été envoyée avec succès.'})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+
+def submit_formation_request(request):
+    """Traitement AJAX de la demande de formation"""
+    from .forms import ContactForm
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            contact = form.save()
+             # Envoyer un email
+            try:
+                send_mail(
+                    f'Nouvelle demande de formation - {contact.nom}',
+                    f'Nom: {contact.nom}\nEmail: {contact.email}\nTéléphone: {contact.telephone}\nFormation: {contact.formation_interessee.titre}\n\nSujet: {contact.sujet}\n\nMessage:\n{contact.message}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [settings.CONTACT_EMAIL],
+                    fail_silently=True,
+                )
+            except:
+                pass
+            
+            return JsonResponse({'success': True, 'message': 'Votre inscription a été envoyée avec succès.'})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)

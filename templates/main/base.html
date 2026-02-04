@@ -1,13 +1,15 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ site_config.meta_title }}{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}{{ site_config.meta_description }}{% endblock %}">
-    <meta name="keywords" content="{% block meta_keywords %}services informatiques, formations, consulting IT, développement, sécurité, cloud{% endblock %}">
-    
+    <meta name="keywords"
+        content="{% block meta_keywords %}services informatiques, formations, consulting IT, développement, sécurité, cloud{% endblock %}">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -19,19 +21,21 @@
     <link rel="stylesheet" href="{% static 'css/custom-theme.css' %}?v=4.0">
     <link rel="stylesheet" href="{% static 'css/logo-styles.css' %}?v=4.0">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'home' %}">
                 {% if site_config.logo %}
-                    <img src="{{ site_config.logo.url }}" alt="{{ site_config.nom_site }}" class="me-2 logo-no-background">
+                <img src="{{ site_config.logo.url }}" alt="{{ site_config.nom_site }}" class="me-2 logo-no-background">
                 {% else %}
-                    <i class="fas fa-globe text-primary-custom me-2"></i>
+                <i class="fas fa-globe text-primary-custom me-2"></i>
                 {% endif %}
                 <span class="brand-text">{{ site_config.nom_site }}</span>
             </a>
@@ -56,6 +60,9 @@
                         <a class="nav-link" href="{% url 'partners' %}">Nos Partenaires</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'job_offers' %}">Recrutement</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link btn btn-outline-primary ms-2 px-3" href="{% url 'contact' %}">Contact</a>
                     </li>
                 </ul>
@@ -63,16 +70,15 @@
         </div>
     </nav>
 
-    <!-- Messages -->
+    <!-- Messages (as Toasts) -->
     {% if messages %}
-        <div class="container mt-5 pt-4">
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
+            showToast("{{ message|escapejs }}", "{{ message.tags|escapejs }}");
             {% endfor %}
-        </div>
+        });
+    </script>
     {% endif %}
 
     <!-- Main Content -->
@@ -89,33 +95,38 @@
                     <div class="footer-brand">
                         <h4 class="footer-logo mb-3">
                             {% if site_config.logo %}
-                                <img src="{{ site_config.logo.url }}" alt="{{ site_config.nom_site }}" height="50" class="me-2">
+                            <img src="{{ site_config.logo.url }}" alt="{{ site_config.nom_site }}" height="50"
+                                class="me-2">
                             {% else %}
-                                <i class="fas fa-globe text-accent-red me-2"></i>
+                            <i class="fas fa-globe text-accent-red me-2"></i>
                             {% endif %}
                             <span class="brand-text">{{ site_config.nom_site }}</span>
                         </h4>
                         <p class="footer-description">
-                            Votre partenaire technologique de confiance. Nous transformons vos défis IT en opportunités d'innovation grâce à des solutions sur mesure et des formations d'excellence.
+                            Votre partenaire technologique de confiance. Nous transformons vos défis IT en opportunités
+                            d'innovation grâce à des solutions sur mesure et des formations d'excellence.
                         </p>
                         <div class="footer-social">
                             {% if site_config.linkedin_url %}
-                                <a href="{{ site_config.linkedin_url }}" class="social-link" target="_blank" title="LinkedIn">
-                                    <i class="fab fa-linkedin"></i>
-                                </a>
+                            <a href="{{ site_config.linkedin_url }}" class="social-link" target="_blank"
+                                title="LinkedIn">
+                                <i class="fab fa-linkedin"></i>
+                            </a>
                             {% endif %}
                             {% if site_config.twitter_url %}
-                                <a href="{{ site_config.twitter_url }}" class="social-link" target="_blank" title="Twitter">
-                                    <i class="fab fa-twitter"></i>
-                                </a>
+                            <a href="{{ site_config.twitter_url }}" class="social-link" target="_blank" title="Twitter">
+                                <i class="fab fa-twitter"></i>
+                            </a>
                             {% endif %}
-                            <a href="https://www.facebook.com/profile.php?id=100089327130968&mibextid=wwXIfr&rdid=3F1ZwsTebMDW5L24&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1A5KJGZH1f%2F%3Fmibextid%3DwwXIfr#" class="social-link" target="_blank" title="Facebook">
+                            <a href="https://www.facebook.com/profile.php?id=100089327130968&mibextid=wwXIfr&rdid=3F1ZwsTebMDW5L24&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1A5KJGZH1f%2F%3Fmibextid%3DwwXIfr#"
+                                class="social-link" target="_blank" title="Facebook">
                                 <i class="fab fa-facebook"></i>
                             </a>
                             {% if site_config.instagram_url %}
-                                <a href="{{ site_config.instagram_url }}" class="social-link" target="_blank" title="Instagram">
-                                    <i class="fab fa-instagram"></i>
-                                </a>
+                            <a href="{{ site_config.instagram_url }}" class="social-link" target="_blank"
+                                title="Instagram">
+                                <i class="fab fa-instagram"></i>
+                            </a>
                             {% endif %}
                         </div>
                     </div>
@@ -172,7 +183,8 @@
                                 <i class="fas fa-map-marker-alt contact-icon"></i>
                                 <div class="contact-info">
                                     <span class="contact-label">Adresse</span>
-                                    <span class="contact-text">123 Rue de l'église Chritianisme Benz Vi<br>Bangui, RCA</span>
+                                    <span class="contact-text"> Rue de l'église Chritianisme Benz Vi<br>Bangui,
+                                        RCA</span>
                                 </div>
                             </div>
                         </div>
@@ -204,19 +216,23 @@
     </footer>
 
     <!-- Back to Top Button -->
-    <button id="backToTop" class="btn btn-primary rounded-circle position-fixed" style="bottom: 20px; right: 20px; display: none;">
+    <button id="backToTop" class="btn btn-primary rounded-circle position-fixed"
+        style="bottom: 20px; right: 20px; display: none;">
         <i class="fas fa-arrow-up"></i>
     </button>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;"></div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- AOS Animation -->
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Custom JS -->
-    <script src="{% static 'js/main.js' %}"></script>
-    
+    <script src="{% static 'js/main.js' %}?v=2"></script>
+
     {% block extra_js %}{% endblock %}
-    
+
     <script>
         // Initialize AOS
         AOS.init({
@@ -225,4 +241,5 @@
         });
     </script>
 </body>
+
 </html>

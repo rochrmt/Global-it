@@ -1,0 +1,237 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Modifier l'offre d'emploi - {{ job_offer.titre }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-briefcase me-2"></i>
+                    Modifier l'offre d'emploi
+                </h1>
+                <div>
+                    <a href="{% url 'job_offer_management' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour
+                    </a>
+                </div>
+            </div>
+
+            <!-- Formulaire de modification -->
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="titre" class="form-label">
+                                        Titre du poste <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="titre" name="titre" value="{{ job_offer.titre }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="type_contrat" class="form-label">
+                                        Type de contrat <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="type_contrat" name="type_contrat" required>
+                                        {% for value, label in type_contrat_choices %}
+                                            <option value="{{ value }}" {% if job_offer.type_contrat == value %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lieu" class="form-label">
+                                        Lieu de travail <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="lieu" name="lieu" value="{{ job_offer.lieu }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="experience_min" class="form-label">
+                                        Expérience minimum
+                                    </label>
+                                    <input type="text" class="form-control" id="experience_min" name="experience_min" value="{{ job_offer.experience_min }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="salaire_min" class="form-label">
+                                        Salaire minimum (€)
+                                    </label>
+                                    <input type="number" class="form-control" id="salaire_min" name="salaire_min" value="{{ job_offer.salaire_min|default:'' }}" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="salaire_max" class="form-label">
+                                        Salaire maximum (€)
+                                    </label>
+                                    <input type="number" class="form-control" id="salaire_max" name="salaire_max" value="{{ job_offer.salaire_max|default:'' }}" step="0.01">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="date_debut" class="form-label">
+                                        Date de début souhaitée
+                                    </label>
+                                    <input type="date" class="form-control" id="date_debut" name="date_debut" value="{{ job_offer.date_debut|date:'Y-m-d' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="date_limite" class="form-label">
+                                        Date limite de candidature
+                                    </label>
+                                    <input type="date" class="form-control" id="date_limite" name="date_limite" value="{{ job_offer.date_limite|date:'Y-m-d' }}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">
+                                Description du poste <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="5" required>{{ job_offer.description }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="missions" class="form-label">
+                                Missions principales <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="missions" name="missions" rows="4" required>{{ job_offer.missions }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="profil_recherche" class="form-label">
+                                Profil recherché <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="profil_recherche" name="profil_recherche" rows="4" required>{{ job_offer.profil_recherche }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="avantages" class="form-label">
+                                Avantages proposés
+                            </label>
+                            <textarea class="form-control" id="avantages" name="avantages" rows="3">{{ job_offer.avantages }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="est_actif" name="est_actif" {% if job_offer.est_actif %}checked{% endif %}>
+                                        <label class="form-check-label" for="est_actif">
+                                            Publier l'offre (rendre visible sur le site)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="urgent" name="urgent" {% if job_offer.urgent %}checked{% endif %}>
+                                        <label class="form-check-label" for="urgent">
+                                            Marquer comme urgent
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                    </div>
+
+                    <!-- Image de l'offre -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="image" class="form-label">
+                                    <i class="fas fa-image me-2"></i>
+                                    Image de présentation
+                                </label>
+                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                <small class="form-text text-muted">
+                                    Formats acceptés : JPG, PNG, WebP. Taille maximale recommandée : 2MB.
+                                </small>
+                                {% if job_offer.image %}
+                                <div class="mt-2">
+                                    <p class="mb-1"><strong>Image actuelle :</strong></p>
+                                    <img src="{{ job_offer.image.url }}" alt="{{ job_offer.titre }}" class="img-thumbnail" style="max-width: 200px;">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Enregistrer les modifications
+                            </button>
+                            <a href="{% url 'job_offer_delete' job_offer.pk %}" class="btn btn-outline-danger">
+                                <i class="fas fa-trash me-2"></i>
+                                Supprimer l'offre
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--bs-dark);
+    margin-bottom: 0.5rem;
+}
+
+textarea.form-control {
+    resize: vertical;
+}
+
+.btn {
+    border-radius: 10px;
+    padding: 0.5rem 1.5rem;
+    font-weight: 500;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

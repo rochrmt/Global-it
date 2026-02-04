@@ -6,7 +6,8 @@
 
 {% block content %}
 <!-- Page Header -->
-<section class="page-header bg-primary-custom text-white" style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+<section class="page-header bg-primary-custom text-white"
+    style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
     <div class="container">
         <div class="row">
             <div class="col-lg-8">
@@ -27,21 +28,22 @@
             <div class="col-lg-8" data-aos="fade-right">
                 <div class="contact-form-wrapper">
                     <h3 class="mb-4 text-dark">Envoyez-nous un message</h3>
-                    <form method="post" class="needs-validation" novalidate>
+                    <form id="contactForm" method="post" action="{% url 'contact' %}" class="needs-validation"
+                        novalidate>
                         {% csrf_token %}
                         {{ form|crispy }}
-                        <button type="submit" class="btn btn-danger btn-lg px-4">
+                        <button type="button" id="submitContactBtn" class="btn btn-danger btn-lg px-4">
                             <i class="fas fa-paper-plane me-2"></i>Envoyer le message
                         </button>
                     </form>
                 </div>
             </div>
-            
+
             <!-- Contact Info -->
             <div class="col-lg-4" data-aos="fade-left">
                 <div class="contact-info-wrapper">
                     <h4 class="mb-4 text-dark">Nos coordonnées</h4>
-                    
+
                     <div class="contact-item mb-4">
                         <div class="contact-icon">
                             <i class="fas fa-map-marker-alt text-danger"></i>
@@ -51,7 +53,7 @@
                             <p class="text-dark">123 Rue de l'église Chritianisme Benz Vi <br>Bangui , RCA</p>
                         </div>
                     </div>
-                    
+
                     <div class="contact-item mb-4">
                         <div class="contact-icon">
                             <i class="fas fa-phone text-danger"></i>
@@ -61,7 +63,7 @@
                             <p class="text-dark">+236 72 77 08 08</p>
                         </div>
                     </div>
-                    
+
                     <div class="contact-item mb-4">
                         <div class="contact-icon">
                             <i class="fas fa-envelope text-danger"></i>
@@ -71,7 +73,7 @@
                             <p class="text-dark">info@global-it.ca</p>
                         </div>
                     </div>
-                    
+
                     <div class="contact-item mb-4">
                         <div class="contact-icon">
                             <i class="fas fa-clock text-danger"></i>
@@ -81,7 +83,7 @@
                             <p class="text-dark">Lundi - Vendredi<br>8h00 - 18h00</p>
                         </div>
                     </div>
-                    
+
                     <!-- Social Links -->
                     <div class="social-links mt-4">
                         <h6 class="mb-3 text-dark">Suivez-nous</h6>
@@ -91,7 +93,8 @@
                         <a href="#" class="btn btn-outline-danger btn-sm me-2">
                             <i class="fab fa-twitter"></i>
                         </a>
-                        <a href="https://www.facebook.com/profile.php?id=100089327130968&mibextid=wwXIfr&rdid=3F1ZwsTebMDW5L24&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1A5KJGZH1f%2F%3Fmibextid%3DwwXIfr#" class="btn btn-outline-danger btn-sm">
+                        <a href="https://www.facebook.com/profile.php?id=100089327130968&mibextid=wwXIfr&rdid=3F1ZwsTebMDW5L24&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1A5KJGZH1f%2F%3Fmibextid%3DwwXIfr#"
+                            class="btn btn-outline-danger btn-sm">
                             <i class="fab fa-facebook"></i>
                         </a>
                     </div>
@@ -107,13 +110,9 @@
         <div class="row">
             <div class="col-12" data-aos="fade-up">
                 <div class="map-wrapper">
-                    <iframe 
-                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15925.456237866536!2d18.558611!3d4.361389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNMKwMjEnNDEuMCJOIDE4wrAzMyczMS4wIkU!5e0!3m2!1sfr!2s!4v1640991208124!5m2!1sfr!2s" 
-                        width="100%" 
-                        height="400" 
-                        style="border:0;" 
-                        allowfullscreen="" 
-                        loading="lazy">
+                    <iframe
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15925.456237866536!2d18.558611!3d4.361389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNMKwMjEnNDEuMCJOIDE4wrAzMyczMS4wIkU!5e0!3m2!1sfr!2s!4v1640991208124!5m2!1sfr!2s"
+                        width="100%" height="400" style="border:0;" allowfullscreen="" loading="lazy">
                     </iframe>
                 </div>
             </div>
@@ -142,4 +141,81 @@
         </div>
     </div>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const submitBtn = document.getElementById('submitContactBtn');
+        const form = document.getElementById('contactForm');
+
+        if (submitBtn && form) {
+            submitBtn.addEventListener('click', function () {
+                // Validate form
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    form.classList.add('was-validated');
+                    return;
+                }
+
+                // Disable button and show loading state
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi en cours...';
+
+                const formData = new FormData(form);
+
+                fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success toast
+                            if (typeof showToast === 'function') {
+                                showToast(data.message || 'Votre message a été envoyé avec succès ! Nous vous répondrons rapidement.', 'success');
+                            } else {
+                                alert(data.message || 'Votre message a été envoyé avec succès !');
+                            }
+                            // Reset form
+                            form.reset();
+                            form.classList.remove('was-validated');
+                        } else {
+                            // Show error
+                            let errorMsg = 'Une erreur est survenue lors de l\'envoi du message.';
+                            if (data.errors) {
+                                try {
+                                    const errors = JSON.parse(data.errors);
+                                    errorMsg = Object.values(errors).flat().join('\n');
+                                } catch (e) {
+                                    errorMsg = data.message || errorMsg;
+                                }
+                            }
+                            if (typeof showToast === 'function') {
+                                showToast(errorMsg, 'error');
+                            } else {
+                                alert(errorMsg);
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        if (typeof showToast === 'function') {
+                            showToast('Erreur de connexion au serveur. Veuillez réessayer.', 'error');
+                        } else {
+                            alert('Erreur de connexion au serveur.');
+                        }
+                    })
+                    .finally(() => {
+                        // Re-enable button
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    });
+            });
+        }
+    });
+</script>
 {% endblock %}
