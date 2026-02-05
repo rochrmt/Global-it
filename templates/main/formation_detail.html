@@ -5,19 +5,21 @@
 
 {% block content %}
 <!-- Page Header -->
-<section class="page-header bg-primary-custom text-white " style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+<section class="page-header bg-primary-custom text-white "
+    style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
     <div class="container">
         <div class="row">
             <div class="col-lg-8">
                 <nav aria-label="breadcrumb" data-aos="fade-right">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white">Accueil</a></li>
-                        <li class="breadcrumb-item"><a href="{% url 'formations' %}" class="text-white">Formations</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'formations' %}" class="text-white">Formations</a>
+                        </li>
                         <li class="breadcrumb-item active text-white-50">{{ formation.titre }}</li>
                     </ol>
                 </nav>
-                <h1 class="display-5 fw-bold text-white" data-aos="fade-right" data-aos-delay="100">{{ formation.titre }}</h1>
-                <p class="lead text-white" data-aos="fade-right" data-aos-delay="200">{{ formation.description|truncatewords:20 }}</p>
+                <h1 class="display-5 fw-bold text-white" data-aos="fade-right" data-aos-delay="100">{{ formation.titre}}</h1>
+                <p class="lead text-white" data-aos="fade-right" data-aos-delay="200">{{formation.description|truncatewords:20 }}</p>
             </div>
         </div>
     </div>
@@ -33,36 +35,38 @@
                         <span class="badge bg-primary-custom fs-6">{{ formation.get_categorie_display }}</span>
                         <span class="badge bg-secondary fs-6">{{ formation.get_niveau_display }}</span>
                         {% if formation.disponible %}
-                            <span class="badge bg-success fs-6">Disponible</span>
+                        <span class="badge bg-success fs-6">Disponible</span>
                         {% else %}
-                            <span class="badge bg-warning fs-6">Sur demande</span>
+                        <span class="badge bg-warning fs-6">Sur demande</span>
                         {% endif %}
                     </div>
-                    
+
                     {% if formation.image %}
                     <div class="formation-main-image mb-4">
-                        <img src="{{ formation.image.url }}" alt="{{ formation.titre }}" class="img-fluid rounded shadow">
+                        <img src="{{ formation.image.url }}" alt="{{ formation.titre }}"
+                            class="img-fluid rounded shadow">
                     </div>
                     {% else %}
                     <div class="formation-main-image mb-4">
-                        <div class="formation-icon-placeholder-large rounded d-flex align-items-center justify-content-center" style="height: 300px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                        <div class="formation-icon-placeholder-large rounded d-flex align-items-center justify-content-center"
+                            style="height: 300px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
                             <i class="fas fa-graduation-cap" style="font-size: 100px;"></i>
                         </div>
                     </div>
                     {% endif %}
-                    
+
                     <div class="formation-description mb-4">
                         <h3 class="mb-3">Description</h3>
                         {{ formation.description|linebreaks }}
                     </div>
-                    
+
                     <div class="formation-objectifs mb-4">
                         <h3 class="mb-3">Objectifs pédagogiques</h3>
                         <div class="objectifs-list">
                             {{ formation.objectifs|linebreaks }}
                         </div>
                     </div>
-                    
+
                     <div class="formation-programme mb-4">
                         <h3 class="mb-3">Programme détaillé</h3>
                         <div class="programme-content">
@@ -70,22 +74,24 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- CTA -->
                 <div class="formation-cta mt-5 p-4 bg-light rounded">
                     <h4 class="mb-3">Prêt à vous former ?</h4>
-                    <p class="text-muted mb-4">Contactez-nous pour planifier votre formation ou obtenir plus d'informations.</p>
+                    <p class="text-muted mb-4">Contactez-nous pour planifier votre formation ou obtenir plus
+                        d'informations.</p>
                     <div class="d-flex gap-3">
-                        <a href="{% url 'contact' %}" class="btn btn-primary btn-lg">
+                        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal"
+                            data-bs-target="#formationRequestModal">
                             <i class="fas fa-calendar me-2"></i>Planifier une session
-                        </a>
+                        </button>
                         <button class="btn btn-outline-primary btn-lg" onclick="window.print()">
                             <i class="fas fa-print me-2"></i>Imprimer la fiche
                         </button>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-lg-4" data-aos="fade-left">
                 <div class="formation-sidebar">
                     <!-- Formation Info -->
@@ -98,11 +104,11 @@
                                 <h6><i class="fas fa-clock text-primary-custom me-2"></i>Durée</h6>
                                 <p>{{ formation.duree }}</p>
                             </div>
-                           <!-- <div class="info-item mb-3">
+                            <!-- <div class="info-item mb-3">
                                 <h6><i class="fas fa-euro-sign text-primary-custom me-2"></i>Prix</h6>
                                 <p class="h5 text-primary-custom">{{ formation.prix }} </p>
                             </div>   -->
-                        
+
                             <div class="info-item mb-3">
                                 <h6><i class="fas fa-signal text-primary-custom me-2"></i>Niveau</h6>
                                 <p>{{ formation.get_niveau_display }}</p>
@@ -113,19 +119,21 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Contact Info -->
                     <div class="card">
                         <div class="card-header bg-dark text-white">
                             <h5 class="mb-0"><i class="fas fa-phone me-2"></i>Contact</h5>
                         </div>
                         <div class="card-body">
-                            <p class="mb-2"><i class="fas fa-envelope text-primary-custom me-2"></i>info@global-it.ca</p>
+                            <p class="mb-2"><i class="fas fa-envelope text-primary-custom me-2"></i>info@global-it.ca
+                            </p>
                             <p class="mb-2"><i class="fas fa-phone text-primary-custom me-2"></i>+236 72 77 08 08</p>
                             <p class="mb-0"><i class="fas fa-clock text-primary-custom me-2"></i>Lun-Ven: 8h-18h</p>
                             <hr>
                             <p class="text-muted small">
-                                N'hésitez pas à nous contacter pour toute question sur cette formation ou pour planifier une session personnalisée.
+                                N'hésitez pas à nous contacter pour toute question sur cette formation ou pour planifier
+                                une session personnalisée.
                             </p>
                         </div>
                     </div>
@@ -134,6 +142,123 @@
         </div>
     </div>
 </section>
+
+<!-- Formation Request Modal -->
+<div class="modal fade" id="formationRequestModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary-custom text-white">
+                <h5 class="modal-title">Inscription - {{ formation.titre }}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formationRequestForm" method="post" action="{% url 'submit_formation_request' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="formation_id" value="{{ formation.pk }}">
+                    <input type="hidden" name="sujet" value="Inscription: {{ formation.titre }}">
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Nom complet *</label>
+                            <input type="text" name="nom" class="form-control" required placeholder="Votre nom">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" class="form-control" required
+                                placeholder="votre@email.com">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Téléphone</label>
+                            <input type="tel" name="telephone" class="form-control" placeholder="06...">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Message / Besoin spécifique</label>
+                            <textarea name="message" class="form-control" rows="4"
+                                placeholder="Souhaitez-vous une session personnalisée ? Avez-vous des questions ?"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="button" id="submitFormationRequest" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Envoyer la demande
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const submitBtn = document.getElementById('submitFormationRequest');
+        const form = document.getElementById('formationRequestForm');
+
+        submitBtn.addEventListener('click', function () {
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            // Disable button
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Envoi en cours...';
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Close modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('formationRequestModal'));
+                        modal.hide();
+
+                        // Show success toast
+                        if (typeof showToast === 'function') {
+                            showToast(data.message, 'success');
+                        } else {
+                            alert(data.message);
+                        }
+                        form.reset();
+                    } else {
+                        // Show error
+                        let errorMsg = 'Une erreur est survenue.';
+                        if (data.errors) {
+                            try {
+                                const errors = JSON.parse(data.errors);
+                                errorMsg = Object.values(errors).flat().join('\n');
+                            } catch (e) { }
+                        }
+                        if (typeof showToast === 'function') {
+                            showToast(errorMsg, 'error');
+                        } else {
+                            alert(errorMsg);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    if (typeof showToast === 'function') {
+                        showToast('Erreur de connexion serveur', 'error');
+                    }
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
+        });
+    });
+</script>
 
 <!-- Related Formations -->
 {% if autres_formations %}
@@ -150,9 +275,9 @@
                             <span class="badge bg-secondary">{{ formation.get_niveau_display }}</span>
                         </div>
                         {% if formation.disponible %}
-                            <span class="badge bg-success">Disponible</span>
+                        <span class="badge bg-success">Disponible</span>
                         {% else %}
-                            <span class="badge bg-warning">Sur demande</span>
+                        <span class="badge bg-warning">Sur demande</span>
                         {% endif %}
                     </div>
                     <div class="formation-content">
@@ -170,7 +295,8 @@
                             </div>
                         </div>
                         <p class="text-muted mb-3">{{ formation.description|truncatewords:15 }}</p>
-                        <a href="{% url 'formation_detail' formation.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                        <a href="{% url 'formation_detail' formation.pk %}"
+                            class="btn btn-outline-primary btn-sm w-100">
                             Voir la formation <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>

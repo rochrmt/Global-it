@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import Contact, Service, Formation, SiteConfiguration, CarouselImage, AboutImage, Partner
+from .models import (Contact, Service, Formation, SiteConfiguration, CarouselImage, 
+                     AboutImage, Partner, OffreEmploi, Candidature, CandidatureSpontanee, CustomerReview)
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
@@ -36,8 +37,6 @@ class ServiceAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" width="300" height="200" style="object-fit: cover; border-radius: 10px;" /><small style="display: block; margin-top: 8px;">Image actuelle</small>', obj.image.url)
         return format_html('<div style="width: 300px; height: 200px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-direction: column;"><i class="fas fa-image text-muted" style="font-size: 48px;"></i><small style="margin-top: 8px;">Aucune image</small></div>')
     image_preview_large.short_description = 'Aperçu de l\'image'
-
-
 @admin.register(Partner)
 class PartnerAdmin(admin.ModelAdmin):
     list_display = ['nom', 'site_web', 'ordre', 'est_actif', 'logo_preview', 'date_creation']
@@ -270,3 +269,196 @@ class CarouselImageAdmin(admin.ModelAdmin):
             return format_html('<img src="{}" width="300" height="200" style="object-fit: cover; border-radius: 10px;" /><small style="display: block; margin-top: 8px;">Image actuelle</small>', obj.image.url)
         return format_html('<div style="width: 300px; height: 200px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-direction: column;"><i class="fas fa-image text-muted" style="font-size: 48px;"></i><small style="margin-top: 8px;">Aucune image</small></div>')
     image_preview_large.short_description = 'Aperçu de l\'image'
+
+@admin.register(CustomerReview)
+class CustomerReviewAdmin(admin.ModelAdmin):
+    list_display = ['nom', 'note', 'entreprise', 'est_actif',  'date_creation']
+    list_filter = ['est_actif', 'note', 'date_creation']
+    list_editable = ['est_actif']
+    search_fields = ['nom', 'entreprise', 'commentaire']
+
+
+@admin.register(OffreEmploi)
+class OffreEmploiAdmin(admin.ModelAdmin):
+    list_display = ['titre', 'type_contrat', 'lieu', 'urgent', 'est_actif', 'nb_candidatures_display', 'date_creation']
+    list_filter = ['type_contrat', 'urgent', 'est_actif', 'date_creation']
+    list_editable = ['urgent', 'est_actif']
+    search_fields = ['titre', 'description', 'lieu']
+    readonly_fields = ['image_preview_large', 'date_creation', 'date_modification', 'nb_candidatures_display']
+    
+    fieldsets = (
+        ('Informations générales', {
+            'fields': ('titre', 'type_contrat', 'lieu', 'description')
+        }),
+        ('Détails du poste', {
+            'fields': ('missions', 'profil_recherche', 'experience_min')
+        }),
+        ('Rémunération', {
+            'fields': ('salaire_min', 'salaire_max')
+        }),
+        ('Dates', {
+            'fields': ('date_debut', 'date_limite')
+        }),
+        ('Avantages', {
+            'fields': ('avantages',)
+        }),
+        ('Image', {
+            'fields': ('image', 'image_preview_large')
+        }),
+        ('Options', {
+            'fields': ('urgent', 'est_actif', 'nb_candidatures_display')
+        }),
+        ('Métadonnées', {
+            'fields': ('date_creation', 'date_modification'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def nb_candidatures_display(self, obj):
+        count = obj.nb_candidatures()
+        if count > 0:
+            return format_html('<span style="color: #28a745; font-weight: bold;">{} candidature(s)</span>', count)
+        return format_html('<span style="color: #6c757d;">0 candidature</span>')
+    nb_candidatures_display.short_description = 'Candidatures'
+    
+    def image_preview_large(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" width="300" height="200" style="object-fit: cover; border-radius: 10px;" /><small style="display: block; margin-top: 8px;">Image actuelle</small>', obj.image.url)
+        return format_html('<div style="width: 300px; height: 200px; background: #f8f9fa; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-direction: column;"><i class="fas fa-image text-muted" style="font-size: 48px;"></i><small style="margin-top: 8px;">Aucune image</small></div>')
+    image_preview_large.short_description = 'Aperçu de l\'image'
+
+
+@admin.register(Candidature)
+class CandidatureAdmin(admin.ModelAdmin):
+    list_display = ['nom_complet', 'email', 'offre_emploi', 'statut_badge', 'date_candidature']
+    list_filter = ['statut', 'date_candidature', 'offre_emploi']
+    search_fields = ['nom', 'prenom', 'email', 'motivation']
+    readonly_fields = ['nom', 'prenom', 'email', 'telephone', 'motivation', 'cv', 'cv_link', 'date_candidature', 'date_modification']
+    
+    fieldsets = (
+        ('Candidat', {
+            'fields': ('nom', 'prenom', 'email', 'telephone')
+        }),
+        ('Offre', {
+            'fields': ('offre_emploi',)
+        }),
+        ('Motivation et CV', {
+            'fields': ('motivation', 'cv', 'cv_link')
+        }),
+        ('Gestion', {
+            'fields': ('statut', 'notes_admin')
+        }),
+        ('Dates', {
+            'fields': ('date_candidature', 'date_modification'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['marquer_en_cours', 'marquer_acceptee', 'marquer_rejetee']
+    
+    def nom_complet(self, obj):
+        return f"{obj.prenom} {obj.nom}"
+    nom_complet.short_description = 'Candidat'
+    
+    def statut_badge(self, obj):
+        colors = {
+            'nouvelle': '#ffc107',
+            'en_cours': '#17a2b8',
+            'acceptee': '#28a745',
+            'rejetee': '#dc3545',
+        }
+        color = colors.get(obj.statut, '#6c757d')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;">{}</span>',
+            color, obj.get_statut_display()
+        )
+    statut_badge.short_description = 'Statut'
+    
+    def cv_link(self, obj):
+        if obj.cv:
+            return format_html('<a href="{}" target="_blank" class="button">📄 Télécharger le CV</a>', obj.cv.url)
+        return '-'
+    cv_link.short_description = 'CV'
+    
+    def marquer_en_cours(self, request, queryset):
+        queryset.update(statut='en_cours')
+        self.message_user(request, f'{queryset.count()} candidature(s) marquée(s) en cours.')
+    marquer_en_cours.short_description = 'Marquer en cours d\'examen'
+    
+    def marquer_acceptee(self, request, queryset):
+        queryset.update(statut='acceptee')
+        self.message_user(request, f'{queryset.count()} candidature(s) acceptée(s).')
+    marquer_acceptee.short_description = 'Marquer comme acceptée'
+    
+    def marquer_rejetee(self, request, queryset):
+        queryset.update(statut='rejetee')
+        self.message_user(request, f'{queryset.count()} candidature(s) rejetée(s).')
+    marquer_rejetee.short_description = 'Marquer comme rejetée'
+
+
+@admin.register(CandidatureSpontanee)
+class CandidatureSpontaneeAdmin(admin.ModelAdmin):
+    list_display = ['nom_complet', 'email', 'poste_souhaite', 'statut_badge', 'date_candidature']
+    list_filter = ['statut', 'date_candidature']
+    search_fields = ['nom', 'prenom', 'email', 'poste_souhaite', 'motivation']
+    readonly_fields = ['nom', 'prenom', 'email', 'telephone', 'poste_souhaite', 'motivation', 'cv', 'cv_link', 'date_candidature', 'date_modification']
+    
+    fieldsets = (
+        ('Candidat', {
+            'fields': ('nom', 'prenom', 'email', 'telephone')
+        }),
+        ('Poste souhaité', {
+            'fields': ('poste_souhaite',)
+        }),
+        ('Motivation et CV', {
+            'fields': ('motivation', 'cv', 'cv_link')
+        }),
+        ('Gestion', {
+            'fields': ('statut', 'notes_admin')
+        }),
+        ('Dates', {
+            'fields': ('date_candidature', 'date_modification'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    actions = ['marquer_en_cours', 'marquer_acceptee', 'marquer_rejetee']
+    
+    def nom_complet(self, obj):
+        return f"{obj.prenom} {obj.nom}"
+    nom_complet.short_description = 'Candidat'
+    
+    def statut_badge(self, obj):
+        colors = {
+            'nouvelle': '#ffc107',
+            'en_cours': '#17a2b8',
+            'acceptee': '#28a745',
+            'rejetee': '#dc3545',
+        }
+        color = colors.get(obj.statut, '#6c757d')
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; font-weight: bold;">{}</span>',
+            color, obj.get_statut_display()
+        )
+    statut_badge.short_description = 'Statut'
+    
+    def cv_link(self, obj):
+        if obj.cv:
+            return format_html('<a href="{}" target="_blank" class="button">📄 Télécharger le CV</a>', obj.cv.url)
+        return '-'
+    cv_link.short_description = 'CV'
+    
+    def marquer_en_cours(self, request, queryset):
+        queryset.update(statut='en_cours')
+        self.message_user(request, f'{queryset.count()} candidature(s) marquée(s) en cours.')
+    marquer_en_cours.short_description = 'Marquer en cours d\'examen'
+    
+    def marquer_acceptee(self, request, queryset):
+        queryset.update(statut='acceptee')
+        self.message_user(request, f'{queryset.count()} candidature(s) acceptée(s).')
+    marquer_acceptee.short_description = 'Marquer comme acceptée'
+    
+    def marquer_rejetee(self, request, queryset):
+        queryset.update(statut='rejetee')
+        self.message_user(request, f'{queryset.count()} candidature(s) rejetée(s).')
+    marquer_rejetee.short_description = 'Marquer comme rejetée'

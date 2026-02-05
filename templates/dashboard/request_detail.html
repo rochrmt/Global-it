@@ -1,0 +1,97 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Détail de la demande - Dashboard{% endblock %}
+
+{% block dashboard_content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Détail de la demande</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'dashboard:request_manager' %}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Informations du message</h5>
+                <span class="badge {% if demande.traite %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                    {% if demande.traite %}Traitée{% else %}À traiter{% endif %}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Sujet :</strong> {{ demande.sujet }}
+                </div>
+
+                {% if demande.service_interesse %}
+                <div class="alert alert-primary">
+                    <i class="fas fa-laptop-code me-2"></i> Intéressé par le service : <strong>{{
+                        demande.service_interesse.titre }}</strong>
+                </div>
+                {% endif %}
+
+                {% if demande.formation_interessee %}
+                <div class="alert alert-info">
+                    <i class="fas fa-graduation-cap me-2"></i> Intéressé par la formation : <strong>{{
+                        demande.formation_interessee.titre }}</strong>
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    <h6 class="text-muted mb-2">Message :</h6>
+                    <div class="p-3 bg-light rounded border">
+                        {{ demande.message|linebreaks }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <small class="text-muted">Reçu le {{ demande.date_creation|date:"d F Y à H:i" }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Informations contact</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Nom :</strong> {{ demande.nom }}</p>
+                <p><strong>Email :</strong> <a href="mailto:{{ demande.email }}">{{ demande.email }}</a></p>
+                {% if demande.telephone %}
+                <p><strong>Téléphone :</strong> <a href="tel:{{ demande.telephone }}">{{ demande.telephone }}</a></p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Actions</h5>
+            </div>
+            <div class="card-body d-grid gap-2">
+                <a href="mailto:{{ demande.email }}?subject=Réponse : {{ demande.sujet }}" class="btn btn-primary">
+                    <i class="fas fa-reply me-2"></i>Répondre par email
+                </a>
+
+                <form method="post" action="">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle_status">
+                    {% if demande.traite %}
+                    <button type="submit" class="btn btn-warning w-100">
+                        <i class="fas fa-undo me-2"></i>Marquer comme non traité
+                    </button>
+                    {% else %}
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-check me-2"></i>Marquer comme traité
+                    </button>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

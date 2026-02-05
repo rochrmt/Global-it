@@ -19,10 +19,18 @@ def admin_dashboard(request):
         'available_formations': Formation.objects.filter(disponible=True).count(),
         'total_contacts': Contact.objects.count(),
         'unread_contacts': Contact.objects.filter(est_traite=False).count(),
+        'total_candidatures': Candidature.objects.count(),
+        'active_candidatures': Candidature.objects.filter(est_actif=True).count(),
+        'nouvelles_candidatures': Candidature.objects.filter(statut='nouvelle').count(),
+        'candidatures_en_cours': Candidature.objects.filter(statut='en_cours').count(),
+        'candidatures_traitees': Candidature.objects.filter(statut='traitee').count(),
     }
     
     # Contacts récents
     recent_contacts = Contact.objects.order_by('-date_creation')[:10]
+    
+    # Candidatures récentes
+    recent_candidatures = Candidature.objects.order_by('-date_creation')[:10]
     
     # Services par catégorie
     services_by_category = {}
@@ -39,6 +47,7 @@ def admin_dashboard(request):
     context = {
         'stats': stats,
         'recent_contacts': recent_contacts,
+        'recent_candidatures': recent_candidatures,
         'services_by_category': services_by_category,
         'formations_by_level': formations_by_level,
         'server_time': datetime.datetime.now(),
@@ -167,7 +176,6 @@ def quick_actions(request):
     
     return render(request, 'admin/quick_actions.html')
 
-
 @staff_member_required
 def partner_management(request):
     """Gestion des partenaires"""
@@ -179,7 +187,6 @@ def partner_management(request):
         'active_partners': partners.filter(est_actif=True).count(),
     }
     return render(request, 'admin/partner_management.html', context)
-
 
 @staff_member_required
 def partner_create(request):
@@ -207,7 +214,6 @@ def partner_create(request):
             messages.error(request, 'Veuillez remplir tous les champs obligatoires.')
     
     return render(request, 'admin/partner_create.html')
-
 
 @staff_member_required
 def partner_edit(request, pk):
@@ -243,7 +249,6 @@ def partner_edit(request, pk):
     }
     return render(request, 'admin/partner_edit.html', context)
 
-
 @staff_member_required
 def partner_delete(request, pk):
     """Supprimer un partenaire"""
@@ -259,3 +264,4 @@ def partner_delete(request, pk):
         'partner': partner,
     }
     return render(request, 'admin/partner_delete.html', context)
+

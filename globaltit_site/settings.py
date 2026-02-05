@@ -7,12 +7,18 @@ import os
 from decouple import Config, RepositoryEnv
 import dj_database_url
 
-# Charger .env.render si disponible (pour Render)
-if os.path.exists('.env.render'):
-    config = Config(RepositoryEnv('.env.render'))
-else:
-    from decouple import config as decouple_config
-    config = decouple_config
+# Configuration simple avec python-decouple
+try:
+    from decouple import config
+except ImportError:
+    # Fallback si decouple n'est pas installé
+    def config(key, default=None, cast=None):
+        value = os.environ.get(key, default)
+        if cast and value is not None:
+            if cast == bool:
+                return value.lower() in ('true', '1', 'yes', 'on')
+            return cast(value)
+        return value
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent

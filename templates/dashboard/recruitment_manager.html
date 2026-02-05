@@ -1,0 +1,295 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Gestion du Recrutement - Dashboard{% endblock %}
+{% block page_title %}Gestion du Recrutement{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Offres d'emploi</h5>
+                <h2 class="display-4">{{ total_offers }}</h2>
+                <p class="mb-0">Offres actives et archivées</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Candidatures reçues</h5>
+                <h2 class="display-4">{{ total_applications }}</h2>
+                <p class="mb-0">Total des candidatures</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Nouvelles candidatures</h5>
+                <h2 class="display-4">{{ new_applications }}</h2>
+                <p class="mb-0">Candidatures à examiner</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Offres d'emploi</h5>
+        <a href="{% url 'dashboard:add_job_offer' %}" class="btn btn-primary btn-sm">
+            <i class="fas fa-plus"></i> Ajouter une offre
+        </a>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Titre</th>
+                        <th>Type</th>
+                        <th>Lieu</th>
+                        <th>Statut</th>
+                        <th>Urgent</th>
+                        <th>Candidatures</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for offre in job_offers %}
+                    <tr>
+                        <td>{{ offre.titre }}</td>
+                        <td>{{ offre.get_type_contrat_display }}</td>
+                        <td>{{ offre.lieu }}</td>
+                        <td>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input toggle-status" type="checkbox" data-id="{{ offre.pk }}"
+                                    {% if offre.est_actif %}checked{% endif %}>
+                                <label class="status-label">{% if offre.est_actif %}Actif{% else %}Inactif{% endif %}</label>
+                            </div>
+                        </td>
+                        <td>
+                            {% if offre.urgent %}
+                            <span class="badge bg-danger">Oui</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Non</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ offre.nb_candidatures }}</td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'dashboard:edit_job_offer' offre.pk %}"
+                                    class="btn btn-sm btn-outline-info">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-danger delete-job"
+                                    data-id="{{ offre.pk }}" data-title="{{ offre.titre }}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">Aucune offre d'emploi.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" id="applicationTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="normal-tab" data-bs-toggle="tab" data-bs-target="#normal"
+                    type="button" role="tab">Candidatures aux offres</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="spontaneous-tab" data-bs-toggle="tab" data-bs-target="#spontaneous"
+                    type="button" role="tab">Candidatures spontanées</button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="applicationTabsContent">
+            <!-- Candidatures normales -->
+            <div class="tab-pane fade show active" id="normal" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Candidat</th>
+                                <th>Offre</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in applications %}
+                            <tr>
+                                <td>{{ app.prenom }} {{ app.nom }}</td>
+                                <td>{{ app.offre_emploi.titre }}</td>
+                                <td>{{ app.date_candidature|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span
+                                        class="badge {% if app.statut == 'nouvelle' %}bg-primary{% elif app.statut == 'en_cours' %}bg-info{% elif app.statut == 'acceptee' %}bg-success{% else %}bg-danger{% endif %} text-capitalize">
+                                        {{ app.get_statut_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'dashboard:view_application' app.pk %}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-app"
+                                            data-id="{{ app.pk }}" data-type="normal">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Aucune candidature pour le moment.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Candidatures spontanées -->
+            <div class="tab-pane fade" id="spontaneous" role="tabpanel">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Candidat</th>
+                                <th>Poste souhaité</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for app in spontaneous_applications %}
+                            <tr>
+                                <td>{{ app.prenom }} {{ app.nom }}</td>
+                                <td>{{ app.poste_souhaite }}</td>
+                                <td>{{ app.date_candidature|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    <span
+                                        class="badge {% if app.statut == 'nouvelle' %}bg-primary{% elif app.statut == 'en_cours' %}bg-info{% elif app.statut == 'acceptee' %}bg-success{% else %}bg-danger{% endif %} text-capitalize">
+                                        {{ app.get_statut_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'dashboard:view_application' app.pk 'spontaneous' %}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger delete-app"
+                                            data-id="{{ app.pk }}" data-type="spontaneous">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">Aucune candidature spontanée.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Toggle active status
+        document.querySelectorAll('.toggle-status').forEach(checkbox => {
+            checkbox.addEventListener('change', function () {
+                const pk = this.dataset.id;
+                const label = this.nextElementSibling;
+
+                fetch(`/dashboard/recruitment/jobs/${pk}/toggle/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            label.textContent = data.is_active ? 'Actif' : 'Inactif';
+                        }
+                    });
+            });
+        });
+
+        // Delete job offer
+        document.querySelectorAll('.delete-job').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const pk = this.dataset.id;
+                const title = this.dataset.title;
+
+                if (confirm(`Êtes-vous sûr de vouloir supprimer l'offre "${title}" ?`)) {
+                    fetch(`/dashboard/recruitment/jobs/${pk}/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            }
+                        });
+                }
+            });
+        });
+
+        // Delete application
+        document.querySelectorAll('.delete-app').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const pk = this.dataset.id;
+                const type = this.dataset.type;
+
+                if (confirm('Êtes-vous sûr de vouloir supprimer cette candidature ?')) {
+                    const formData = new FormData();
+                    formData.append('type', type);
+
+                    fetch(`/dashboard/recruitment/applications/${pk}/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: formData
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                location.reload();
+                            }
+                        });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

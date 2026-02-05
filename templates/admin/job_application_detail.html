@@ -1,0 +1,226 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Détail de la candidature - {{ application.nom }} {{ application.prenom }} - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0">
+                    <i class="fas fa-user-tie me-2"></i>
+                    Détail de la candidature
+                </h1>
+                <div>
+                    <a href="{% url 'application_management' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>
+                        Retour aux candidatures
+                    </a>
+                </div>
+            </div>
+
+            <!-- Informations du candidat -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Informations du candidat
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Nom :</strong> {{ application.nom }}</p>
+                            <p><strong>Prénom :</strong> {{ application.prenom }}</p>
+                            <p><strong>Email :</strong> {{ application.email }}</p>
+                            <p><strong>Téléphone :</strong> {{ application.telephone|default:"Non renseigné" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Date de candidature :</strong> {{ application.date_creation|date:"d/m/Y H:i" }}</p>
+                            <p><strong>Offre d'emploi :</strong> {{ application.offre.titre }}</p>
+                            <p><strong>Statut :</strong> 
+                                <span class="badge bg-{% if application.statut == 'NOUVELLE' %}primary{% elif application.statut == 'EN_COURS' %}warning{% elif application.statut == 'ACCEPTEE' %}success{% elif application.statut == 'REFUSEE' %}danger{% else %}secondary{% endif %}">
+                                    {{ application.get_statut_display }}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CV et documents -->
+            {% if application.cv %}
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        Curriculum Vitae
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-file-pdf text-danger me-3" style="font-size: 2rem;"></i>
+                        <div>
+                            <p class="mb-1"><strong>CV téléchargé :</strong></p>
+                            <a href="{{ application.cv.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-download me-2"></i>
+                                Télécharger le CV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Lettre de motivation -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Lettre de motivation
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="motivation-text" style="white-space: pre-wrap; line-height: 1.6;">
+                        {{ application.motivation }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes et commentaires -->
+            <div class="card shadow mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sticky-note me-2"></i>
+                        Notes internes
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'update_application_status' application.pk 'job' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes sur le candidat :</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="Ajoutez vos notes ici...">{{ application.notes|default:"" }}</textarea>
+                        </div>
+                        
+                        <!-- Changement de statut -->
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Modifier le statut :</label>
+                            <select class="form-select" id="status" name="status">
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if application.statut == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            Enregistrer les modifications
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Contacter le candidat :</h6>
+                            <a href="mailto:{{ application.email }}" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-envelope me-2"></i>
+                                Envoyer un email
+                            </a>
+                            {% if application.telephone %}
+                            <a href="tel:{{ application.telephone }}" class="btn btn-outline-success">
+                                <i class="fas fa-phone me-2"></i>
+                                Appeler
+                            </a>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Gestion de la candidature :</h6>
+                            <form method="post" action="{% url 'update_application_status' application.pk 'job' %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="REFUSEE">
+                                <button type="submit" class="btn btn-outline-danger me-2" onclick="return confirm('Êtes-vous sûr de vouloir refuser cette candidature ?')">
+                                    <i class="fas fa-times me-2"></i>
+                                    Refuser
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'update_application_status' application.pk 'job' %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="ACCEPTEE">
+                                <button type="submit" class="btn btn-outline-success" onclick="return confirm('Êtes-vous sûr de vouloir accepter cette candidature ?')">
+                                    <i class="fas fa-check me-2"></i>
+                                    Accepter
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-radius: 15px 15px 0 0 !important;
+    padding: 1.25rem 1.5rem;
+}
+
+.motivation-text {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 10px;
+    border-left: 4px solid var(--bs-success);
+}
+
+.btn {
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid #dee2e6;
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Candidature de {{ application.prenom }} {{ application.nom }} - Dashboard{% endblock %}
+{% block page_title %}Détail de la Candidature{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Informations du Candidat</h5>
+                <span
+                    class="badge {% if application.statut == 'nouvelle' %}bg-primary{% elif application.statut == 'en_cours' %}bg-info{% elif application.statut == 'acceptee' %}bg-success{% else %}bg-danger{% endif %} py-2 px-3 text-capitalize">
+                    {{ application.get_statut_display }}
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p class="text-muted mb-1">Nom complet</p>
+                        <h5 class="fw-bold">{{ application.prenom }} {{ application.nom }}</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted mb-1">Date d'envoi</p>
+                        <h5 class="fw-bold">{{ application.date_candidature|date:"d F Y à H:i" }}</h5>
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <p class="text-muted mb-1">Email</p>
+                        <h5><a href="mailto:{{ application.email }}">{{ application.email }}</a></h5>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="text-muted mb-1">Téléphone</p>
+                        <h5>{{ application.telephone|default:"Non renseigné" }}</h5>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="mb-4">
+                    <p class="text-muted mb-2">Concernant</p>
+                    {% if type == 'normal' %}
+                    <div class="p-3 bg-light rounded border">
+                        <h6 class="mb-1 text-primary">Offre d'emploi</h6>
+                        <h5 class="mb-0">{{ application.offre_emploi.titre }}</h5>
+                        <p class="mb-0 small text-muted">{{ application.offre_emploi.lieu }} | {{
+                            application.offre_emploi.get_type_contrat_display }}</p>
+                    </div>
+                    {% else %}
+                    <div class="p-3 bg-light rounded border">
+                        <h6 class="mb-1 text-info">Candidature Spontanée</h6>
+                        <h5 class="mb-0">Poste souhaité : {{ application.poste_souhaite }}</h5>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <p class="text-muted mb-2">Lettre de motivation</p>
+                    <div class="bg-light p-3 rounded" style="white-space: pre-line;">
+                        {{ application.motivation }}
+                    </div>
+                </div>
+
+                <div class="mb-0">
+                    <p class="text-muted mb-2">Pièces jointes</p>
+                    {% if application.cv %}
+                    <a href="{{ application.cv.url }}" class="btn btn-outline-primary" target="_blank">
+                        <i class="fas fa-file-pdf me-2"></i> Télécharger le CV
+                    </a>
+                    {% else %}
+                    <span class="text-danger">Aucun CV fourni.</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Gestion de la candidature -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Gestion de la Candidature</h5>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'dashboard:update_application_status' application.pk %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="type" value="{{ type }}">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Modifier le statut</label>
+                        <select name="status" class="form-select">
+                            <option value="nouvelle" {% if application.statut == 'nouvelle' %}selected{% endif %}>Nouvelle
+                            </option>
+                            <option value="en_cours" {% if application.statut == 'en_cours' %}selected{% endif %}>En cours
+                                d'examen</option>
+                            <option value="acceptee" {% if application.statut == 'acceptee' %}selected{% endif %}>Acceptée
+                            </option>
+                            <option value="rejetee" {% if application.statut == 'rejetee' %}selected{% endif %}>Rejetée
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Notes internes (Admin)</label>
+                        <textarea name="notes" class="form-control" rows="5"
+                            placeholder="Ajoutez vos commentaires sur ce candidat...">{{ application.notes_admin }}</textarea>
+                        <small class="text-muted">Ces notes ne sont pas visibles par le candidat.</small>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Sauvegarder
+                        </button>
+                        <a href="{% url 'dashboard:recruitment_manager' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Retour à la liste
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Actions rapides de contact -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Actions rapides</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="mailto:{{ application.email }}?subject=Suite à votre candidature pour le poste de {% if type == 'normal' %}{{ application.offre_emploi.titre }}{% else %}{{ application.poste_souhaite }}{% endif %}"
+                        class="btn btn-outline-dark">
+                        <i class="fas fa-envelope me-2"></i> Répondre par email
+                    </a>
+                    {% if application.telephone %}
+                    <a href="tel:{{ application.telephone }}" class="btn btn-outline-dark">
+                        <i class="fas fa-phone me-2"></i> Appeler le candidat
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
