@@ -15,6 +15,7 @@ urlpatterns = [
     # URLs Soumission formulaires
     path('contact/submit-service/', views.submit_service_request, name='submit_service_request'),
     path('contact/submit-formation/', views.submit_formation_request, name='submit_formation_request'),
+    path('contact/submit-quick/', views.submit_quick_request, name='submit_quick_request'),
     
     # URLs Recrutement
     path('recrutement/', views.job_offers, name='job_offers'),

@@ -261,6 +261,37 @@ def submit_service_request(request):
             return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
     return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
 
+def submit_quick_request(request):
+    """Traitement AJAX du formulaire de devis rapide"""
+    from .forms import QuickContactForm
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        form = QuickContactForm(request.POST)
+        if form.is_valid():
+            contact = Contact.objects.create(
+                nom=form.cleaned_data['nom'],
+                email=form.cleaned_data['email'],
+                telephone=form.cleaned_data['telephone'],
+                sujet=f"Demande rapide: {form.cleaned_data['besoin']}",
+                message=f"Demande rapide reçue via le formulaire de contact rapide.\n\nBesoin: {form.cleaned_data['besoin']}"
+            )
+            
+            # Envoyer un email
+            try:
+                send_mail(
+                    f'Nouvelle demande rapide - {contact.nom}',
+                    f'Nom: {contact.nom}\nEmail: {contact.email}\nTéléphone: {contact.telephone}\n\nBesoin: {form.cleaned_data["besoin"]}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [settings.CONTACT_EMAIL],
+                    fail_silently=True,
+                )
+            except:
+                pass
+            
+            return JsonResponse({'success': True, 'message': 'Votre demande a été envoyée avec succès ! Nous vous contacterons rapidement.'})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors.as_json()}, status=400)
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+
 def submit_formation_request(request):
     """Traitement AJAX de la demande de formation"""
     from .forms import ContactForm
