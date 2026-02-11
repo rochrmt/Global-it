@@ -94,7 +94,7 @@ class SiteConfiguration(models.Model):
     """Configuration globale du site"""
     
     # Informations générales
-    nom_site = models.CharField(max_length=100, default="GLOBALT-IT")
+    nom_site = models.CharField(max_length=100, default="Global-IT")
     logo = models.ImageField(upload_to='config/', blank=True, null=True,
                            validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp', 'svg'])])
     
