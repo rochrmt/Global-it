@@ -1,0 +1,176 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter une Marque - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-tags text-info"></i> Ajouter une Marque
+        </h1>
+        <div>
+            <a href="{% url 'dashboard:brand_manager' %}" class="btn btn-secondary btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-arrow-left"></i>
+                </span>
+                <span class="text">Retour à la liste</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informations de la marque</h6>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="{{ form.nom.id_for_label }}">Nom de la marque <span class="text-danger">*</span></label>
+                            {{ form.nom }}
+                            {% if form.nom.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.nom.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Nom de la marque (ex: Nike, Adidas, etc.).</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.site_web.id_for_label }}">Site Web <span class="text-danger">*</span></label>
+                            {{ form.site_web }}
+                            {% if form.site_web.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.site_web.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">URL du site web de la marque (ex: https://www.example.com).</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.logo.id_for_label }}">Logo</label>
+                            {{ form.logo }}
+                            {% if form.logo.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.logo.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Formats acceptés : JPG, JPEG, PNG, WEBP, SVG. Taille maximale recommandée : 500KB.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="{{ form.description.id_for_label }}">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.description.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Description optionnelle de la marque.</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="{{ form.ordre.id_for_label }}">Ordre d'affichage</label>
+                                    {{ form.ordre }}
+                                    {% if form.ordre.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.ordre.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Ordre d'affichage (0 = premier).</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div class="custom-control custom-checkbox">
+                                        {{ form.est_actif }}
+                                        <label class="custom-control-label" for="{{ form.est_actif.id_for_label }}">
+                                            Activer la marque
+                                        </label>
+                                    </div>
+                                    {% if form.est_actif.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.est_actif.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-primary btn-icon-split">
+                                <span class="icon text-white-50">
+                                    <i class="fas fa-save"></i>
+                                </span>
+                                <span class="text">Enregistrer la marque</span>
+                            </button>
+                            <a href="{% url 'dashboard:brand_manager' %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Aide</h6>
+                </div>
+                <div class="card-body">
+                    <h6 class="font-weight-bold">Champs obligatoires</h6>
+                    <ul>
+                        <li>Nom de la marque</li>
+                        <li>Site Web</li>
+                    </ul>
+
+                    <h6 class="font-weight-bold">Conseils</h6>
+                    <ul>
+                        <li>Utilisez un logo de bonne qualité avec un fond transparent si possible.</li>
+                        <li>L'ordre d'affichage permet de classer les marques sur la page.</li>
+                        <li>Les marques inactives ne seront pas visibles sur le site.</li>
+                    </ul>
+
+                    <h6 class="font-weight-bold">Formats d'image</h6>
+                    <ul>
+                        <li>Formats acceptés : JPG, JPEG, PNG, WEBP, SVG</li>
+                        <li>Taille recommandée : 300x200px minimum</li>
+                        <li>Poids maximum : 2MB</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

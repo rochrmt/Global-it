@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.core.mail import send_mail
 from django.conf import settings
 from django.utils import timezone
-from .models import Service, Formation, Contact, CarouselImage, AboutImage, CustomerReview, Partner
+from .models import Service, Formation, Contact, CarouselImage, AboutImage, CustomerReview, Partner, Brand
 from .forms import QuickContactForm, ContactForm
 
 
@@ -155,8 +155,10 @@ def about(request):
 
 def partners(request):
     partners = Partner.objects.filter(est_actif=True).order_by('ordre', 'nom')
+    brands = Brand.objects.filter(est_actif=True).order_by('ordre', 'nom')
     context = {
         'partners': partners,
+        'brands': brands,
     }
     return render(request, 'main/partners.html', context)
 

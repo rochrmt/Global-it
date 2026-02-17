@@ -68,6 +68,14 @@
                 </li>
 
                 <li class="nav-item">
+                    <a href="{% url 'dashboard:brand_manager' %}"
+                        class="nav-link {% if request.resolver_match.url_name == 'brand_manager' %}active{% endif %}">
+                        <i class="fas fa-tags"></i>
+                        <span>Gestion des marques</span>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a href="{% url 'dashboard:recruitment_manager' %}"
                         class="nav-link {% if 'recruitment' in request.resolver_match.url_name %}active{% endif %}">
                         <i class="fas fa-user-tie"></i>

@@ -243,6 +243,29 @@ class Partner(models.Model):
         return self.nom
 
 
+class Brand(models.Model):
+    """Marques de l'entreprise"""
+    
+    nom = models.CharField(max_length=100, help_text="Nom de la marque")
+    site_web = models.URLField(help_text="URL du site web de la marque")
+    logo = models.ImageField(upload_to='brands/', 
+                           validators=[FileExtensionValidator(['jpg', 'jpeg', 'png', 'webp', 'svg'])],
+                           help_text="Logo de la marque")
+    description = models.TextField(blank=True, help_text="Description optionnelle de la marque")
+    ordre = models.IntegerField(default=0, help_text="Ordre d'affichage")
+    est_actif = models.BooleanField(default=True, help_text="Afficher cette marque sur le site")
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_modification = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['ordre', 'nom']
+        verbose_name = 'Marque'
+        verbose_name_plural = 'Marques'
+    
+    def __str__(self):
+        return self.nom
+
+
 class OffreEmploi(models.Model):
     """Offres d'emploi"""
     

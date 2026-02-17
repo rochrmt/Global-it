@@ -17,9 +17,9 @@ from PIL import Image
 from io import BytesIO
 
 from .models import StaticImage, DashboardActivity, SiteSettings, ImageCategory
-from .forms import PartnerForm
+from .forms import PartnerForm, BrandForm
 from main.models import (
-    Service, Formation, SiteConfiguration, CarouselImage, AboutImage, Partner,
+    Service, Formation, SiteConfiguration, CarouselImage, AboutImage, Partner, Brand,
     OffreEmploi, Candidature, CandidatureSpontanee
 )
 from main.forms import OffreEmploiForm
@@ -1882,6 +1882,160 @@ def toggle_partner_status(request, partner_id):
             messages.error(request, f'Erreur: {str(e)}')
     
     return redirect('dashboard:partner_manager')
+
+
+# --- Gestion des Marques ---
+
+@login_required
+def brand_manager(request):
+    """Gestion des marques"""
+    brands = Brand.objects.all().order_by('ordre', 'nom')
+    
+    # Statistiques
+    total_brands = brands.count()
+    active_brands = brands.filter(est_actif=True).count()
+    inactive_brands = brands.filter(est_actif=False).count()
+    
+    context = {
+        'brands': brands,
+        'total_brands': total_brands,
+        'active_brands': active_brands,
+        'inactive_brands': inactive_brands,
+    }
+    return render(request, 'dashboard/brand_manager.html', context)
+
+
+@login_required
+def add_brand(request):
+    """Ajouter une marque"""
+    if request.method == 'POST':
+        form = BrandForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                brand = form.save()
+                
+                # Logger l'activité
+                DashboardActivity.objects.create(
+                    user=request.user,
+                    action='add',
+                    object_type='Brand',
+                    object_id=brand.id,
+                    description=f"Marque ajoutée: {brand.nom}"
+                )
+                
+                messages.success(request, 'Marque ajoutée avec succès!')
+                return redirect('dashboard:brand_manager')
+            except Exception as e:
+                messages.error(request, f'Erreur lors de l\'ajout: {str(e)}')
+        else:
+            messages.error(request, 'Veuillez corriger les erreurs dans le formulaire.')
+    else:
+        form = BrandForm()
+    
+    context = {
+        'form': form,
+    }
+    return render(request, 'dashboard/add_brand.html', context)
+
+
+@login_required
+def edit_brand(request, brand_id):
+    """Modifier une marque"""
+    brand = get_object_or_404(Brand, id=brand_id)
+    
+    if request.method == 'POST':
+        form = BrandForm(request.POST, request.FILES, instance=brand)
+        if form.is_valid():
+            try:
+                # Gérer le remplacement du logo
+                if request.FILES.get('logo') and brand.logo:
+                    brand.logo.delete()
+                
+                brand = form.save()
+                
+                # Logger l'activité
+                DashboardActivity.objects.create(
+                    user=request.user,
+                    action='update',
+                    object_type='Brand',
+                    object_id=brand.id,
+                    description=f"Marque modifiée: {brand.nom}"
+                )
+                
+                messages.success(request, 'Marque modifiée avec succès!')
+                return redirect('dashboard:brand_manager')
+            except Exception as e:
+                messages.error(request, f'Erreur lors de la modification: {str(e)}')
+        else:
+            messages.error(request, 'Veuillez corriger les erreurs dans le formulaire.')
+    else:
+        form = BrandForm(instance=brand)
+    
+    context = {
+        'form': form,
+        'brand': brand,
+    }
+    return render(request, 'dashboard/edit_brand.html', context)
+
+
+@login_required
+def delete_brand(request, brand_id):
+    """Supprimer une marque"""
+    brand = get_object_or_404(Brand, id=brand_id)
+    
+    if request.method == 'POST':
+        try:
+            nom = brand.nom
+            
+            # Supprimer le fichier logo
+            if brand.logo:
+                brand.logo.delete()
+            
+            # Supprimer l'objet
+            brand.delete()
+            
+            # Logger l'activité
+            DashboardActivity.objects.create(
+                user=request.user,
+                action='delete',
+                object_type='Brand',
+                object_id=brand_id,
+                description=f"Marque supprimée: {nom}"
+            )
+            
+            messages.success(request, 'Marque supprimée avec succès!')
+        except Exception as e:
+            messages.error(request, f'Erreur lors de la suppression: {str(e)}')
+    
+    return redirect('dashboard:brand_manager')
+
+
+@login_required
+def toggle_brand_status(request, brand_id):
+    """Activer/désactiver une marque"""
+    brand = get_object_or_404(Brand, id=brand_id)
+    
+    if request.method == 'POST':
+        try:
+            brand.est_actif = not brand.est_actif
+            brand.save()
+            
+            # Logger l'activité
+            DashboardActivity.objects.create(
+                user=request.user,
+                action='toggle',
+                object_type='Brand',
+                object_id=brand.id,
+                description=f"Marque {'activée' if brand.est_actif else 'désactivée'}: {brand.nom}"
+            )
+            
+            messages.success(request, f"Marque {'activée' if brand.est_actif else 'désactivée'}!")
+        except Exception as e:
+            messages.error(request, f'Erreur: {str(e)}')
+    
+    return redirect('dashboard:brand_manager')
+
+
 # --- Gestion du Recrutement ---
 
 @login_required
