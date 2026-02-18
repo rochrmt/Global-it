@@ -1,0 +1,294 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}{{ action }} un produit - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-box me-2"></i>{{ action }} un produit
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {% if form.errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <h5><i class="fas fa-exclamation-triangle me-2"></i>Erreurs dans le formulaire</h5>
+                        <ul class="mb-0">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="{{ form.nom.id_for_label }}" class="form-label">Nom du produit *</label>
+                                    {{ form.nom }}
+                                    {% if form.nom.errors %}
+                                    <div class="text-danger">
+                                        {{ form.nom.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.categorie.id_for_label }}" class="form-label">Catégorie *</label>
+                                            {{ form.categorie }}
+                                            {% if form.categorie.errors %}
+                                            <div class="text-danger">
+                                                {{ form.categorie.errors }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.reference.id_for_label }}" class="form-label">Référence</label>
+                                            {{ form.reference }}
+                                            {% if form.reference.errors %}
+                                            <div class="text-danger">
+                                                {{ form.reference.errors }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="{{ form.description_courte.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-align-left me-2"></i>Description courte
+                                    </label>
+                                    {{ form.description_courte }}
+                                    {% if form.description_courte.errors %}
+                                    <div class="text-danger mt-1">
+                                        {{ form.description_courte.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Une brève description du produit (max 255 caractères)
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">
+                                        <i class="fas fa-align-justify me-2"></i>Description complète
+                                    </label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                    <div class="text-danger mt-1">
+                                        {{ form.description.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Description détaillée du produit - soyez descriptif et engageant
+                                    </small>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="{{ form.prix.id_for_label }}" class="form-label">Prix *</label>
+                                            {{ form.prix }}
+                                            {% if form.prix.errors %}
+                                            <div class="text-danger">
+                                                {{ form.prix.errors }}
+                                            </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">Prix en euros</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="{{ form.stock.id_for_label }}" class="form-label">Stock *</label>
+                                            {{ form.stock }}
+                                            {% if form.stock.errors %}
+                                            <div class="text-danger">
+                                                {{ form.stock.errors }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="{{ form.ordre.id_for_label }}" class="form-label">Ordre</label>
+                                            {{ form.ordre }}
+                                            {% if form.ordre.errors %}
+                                            <div class="text-danger">
+                                                {{ form.ordre.errors }}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-3">
+                                            {{ form.est_actif }}
+                                            <label class="form-check-label" for="{{ form.est_actif.id_for_label }}">
+                                                Activer le produit
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check form-switch mb-3">
+                                            {{ form.est_en_promotion }}
+                                            <label class="form-check-label" for="{{ form.est_en_promotion.id_for_label }}">
+                                                Mettre en promotion
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="promotion-fields" style="display: none;">
+                                    <div class="mb-3">
+                                        <label for="{{ form.prix_promotionnel.id_for_label }}" class="form-label">Prix promotionnel</label>
+                                        {{ form.prix_promotionnel }}
+                                        {% if form.prix_promotionnel.errors %}
+                                        <div class="text-danger">
+                                            {{ form.prix_promotionnel.errors }}
+                                        </div>
+                                        {% endif %}
+                                        <small class="form-text text-muted">Prix promotionnel en euros</small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.image_principale.id_for_label }}" class="form-label">Image principale</label>
+                                    {% if product and product.image_principale %}
+                                    <div class="mb-2">
+                                        <img src="{{ product.image_principale.url }}" alt="{{ product.nom }}" class="img-thumbnail" style="width: 100%; max-height: 200px; object-fit: cover;">
+                                    </div>
+                                    {% endif %}
+                                    {{ form.image_principale }}
+                                    {% if form.image_principale.errors %}
+                                    <div class="text-danger">
+                                        {{ form.image_principale.errors }}
+                                    </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">Formats acceptés : JPG, PNG, GIF</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'dashboard:product_manager' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Annuler
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-1"></i>{{ action }} le produit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Amélioration de la visibilité des champs de texte */
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+textarea[name="description"] {
+    min-height: 200px;
+}
+
+textarea[name="description_courte"] {
+    min-height: 80px;
+}
+
+/* Style pour les labels */
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Amélioration des cards */
+.card {
+    border-radius: 0.75rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.card-header {
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+/* Style pour les boutons */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Toggle promotion fields
+document.addEventListener('DOMContentLoaded', function() {
+    const promotionToggle = document.getElementById('{{ form.est_en_promotion.id_for_label }}');
+    const promotionFields = document.getElementById('promotion-fields');
+    
+    function togglePromotionFields() {
+        if (promotionToggle.checked) {
+            promotionFields.style.display = 'block';
+        } else {
+            promotionFields.style.display = 'none';
+        }
+    }
+    
+    promotionToggle.addEventListener('change', togglePromotionFields);
+    togglePromotionFields(); // Initial state
+});
+
+// Prévisualisation de l'image
+document.getElementById('{{ form.image_principale.id_for_label }}').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            // Créer ou mettre à jour l'aperçu
+            let preview = document.getElementById('image-preview');
+            if (!preview) {
+                preview = document.createElement('img');
+                preview.id = 'image-preview';
+                preview.className = 'img-thumbnail mb-2';
+                preview.style.cssText = 'width: 100%; max-height: 200px; object-fit: cover;';
+                document.getElementById('{{ form.image_principale.id_for_label }}').parentNode.insertBefore(preview, document.getElementById('{{ form.image_principale.id_for_label }}'));
+            }
+            preview.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,307 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}Notre Boutique - GlobalTit{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="page-header py-5 bg-primary text-white" style="min-height: 90vh; display: flex; align-items: center; margin-top: -76px; padding-top: 120px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-5 fw-bold mb-3">Notre Boutique</h1>
+                <p class="lead">Découvrez nos produits et services numériques</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Boutons de filtre -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                    <a href="{% url 'boutique' %}" class="btn {% if not selected_category %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                        Tous les produits
+                    </a>
+                    {% for categorie in categories %}
+                    <a href="?categorie={{ categorie.id }}" class="btn {% if selected_category == categorie.id|stringformat:"s" %}btn-primary{% else %}btn-outline-primary{% endif %} btn-sm">
+                        {{ categorie.nom }}
+                    </a>
+                    {% endfor %}
+                </div>
+                
+                <!-- Barre de recherche -->
+                <div class="row mt-4">
+                    <div class="col-md-6 mx-auto">
+                        <form method="get" action="{% url 'boutique' %}" class="d-flex search-form">
+                            {% if selected_category %}
+                            <input type="hidden" name="categorie" value="{{ selected_category }}">
+                            {% endif %}
+                            <input type="text" name="q" class="form-control form-control-lg" placeholder="Rechercher un produit..." value="{{ search_query|default:'' }}">
+                            <button type="submit" class="btn btn-primary ms-2">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            {% if search_query %}
+                            <a href="{% if selected_category %}?categorie={{ selected_category }}{% else %}{% url 'boutique' %}{% endif %}" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-times"></i>
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Produits en promotion -->
+{% if produits_en_promotion %}
+<section class="py-5 bg-warning bg-opacity-10">
+    <div class="container">
+        <div class="text-center mb-4">
+            <h2 class="display-5 fw-bold text-warning">
+                <i class="fas fa-fire me-2"></i>Promotions Spéciales
+            </h2>
+            <p class="text-muted">Ne manquez pas ces offres exceptionnelles !</p>
+        </div>
+        <div class="row g-4">
+            {% for produit in produits_en_promotion %}
+            <div class="col-md-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                <div class="card h-100 border-0 shadow-sm product-card">
+                    {% if produit.image_principale %}
+                    <img src="{{ produit.image_principale.url }}" class="card-img-top" alt="{{ produit.nom }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center" style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-image fa-3x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <div class="mb-2">
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-percentage me-1"></i>Promotion
+                            </span>
+                        </div>
+                        <h5 class="card-title">{{ produit.nom }}</h5>
+                        <p class="card-text text-muted small">{{ produit.description_courte|truncatewords:15 }}</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted text-decoration-line-through">{{ produit.prix }} FCFA</span>
+                                <span class="text-danger fw-bold fs-5">{{ produit.prix_actuel }} FCFA</span>
+                            </div>
+                            <a href="{% url 'produit_detail' produit.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye me-1"></i>Voir
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Tous les produits -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Nos Produits</h2>
+            <p class="text-muted">Des solutions numériques de qualité pour vos besoins</p>
+        </div>
+        
+        <!-- Message informatif -->
+        {% if search_query or selected_category %}
+        <div class="alert alert-info mb-4">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-2"></i>
+                <div>
+                    {% if search_query and selected_category %}
+                        <strong>{{ products.count }}</strong> produit{{ products.count|pluralize }} trouvé{{ products.count|pluralize }} 
+                        pour "<strong>{{ search_query }}</strong>" dans la catégorie "<strong>{{ selected_categorie.nom }}</strong>"
+                    {% elif search_query %}
+                        <strong>{{ products.count }}</strong> produit{{ products.count|pluralize }} trouvé{{ products.count|pluralize }} 
+                        pour "<strong>{{ search_query }}</strong>"
+                    {% elif selected_category %}
+                        Affichage des produits de la catégorie "<strong>{{ selected_categorie.nom }}</strong>"
+                        (<strong>{{ products.count }}</strong> produit{{ products.count|pluralize }})
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if products %}
+        <div class="row g-4">
+            {% for produit in products %}
+            <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:100 }}">
+                <div class="card h-100 border-0 shadow-sm product-card">
+                    {% if produit.image_principale %}
+                    <img src="{{ produit.image_principale.url }}" class="card-img-top" alt="{{ produit.nom }}" style="height: 250px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-gradient d-flex align-items-center justify-content-center" style="height: 250px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-image fa-3x text-white"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body d-flex flex-column">
+                        {% if produit.est_en_promotion %}
+                        <div class="mb-2">
+                            <span class="badge bg-warning text-dark">
+                                <i class="fas fa-percentage me-1"></i>Promotion
+                            </span>
+                        </div>
+                        {% endif %}
+                        <h5 class="card-title">{{ produit.nom }}</h5>
+                        <p class="card-text text-muted flex-grow-1">{{ produit.description_courte|truncatewords:20 }}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-auto">
+                            <div>
+                                {% if produit.est_en_promotion %}
+                                <span class="text-muted text-decoration-line-through small">{{ produit.prix }} FCFA</span>
+                                <span class="text-danger fw-bold fs-5">{{ produit.prix_actuel }} FCFA</span>
+                                {% else %}
+                                <span class="text-primary fw-bold fs-5">{{ produit.prix }} FCFA</span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex gap-2">
+                                {% if produit.stock > 0 %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check me-1"></i>En stock
+                                </span>
+                                {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times me-1"></i>Rupture
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{% url 'produit_detail' produit.pk %}" class="btn btn-primary w-100">
+                                <i class="fas fa-eye me-1"></i>Voir le produit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            {% if search_query or selected_category %}
+                <h3 class="text-muted">Aucun produit trouvé</h3>
+                <p class="text-muted">
+                    {% if search_query and selected_category %}
+                        Aucun produit ne correspond à "{{ search_query }}" dans la catégorie sélectionnée.
+                    {% elif search_query %}
+                        Aucun produit ne correspond à votre recherche "{{ search_query }}".
+                    {% elif selected_category %}
+                        Aucun produit disponible dans cette catégorie pour le moment.
+                    {% endif %}
+                    <br>Essayez avec d'autres termes ou parcourez toutes nos catégories.
+                </p>
+                <a href="{% url 'boutique' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-arrow-left me-2"></i>Voir tous les produits
+                </a>
+            {% else %}
+                <h3 class="text-muted">Aucun produit disponible pour le moment</h3>
+                <p class="text-muted">Revenez bientôt pour découvrir nos nouveaux produits.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5 bg-dark text-white">
+    <div class="container text-center">
+        <h2 class="display-4 fw-bold mb-3">Besoin d'un produit personnalisé ?</h2>
+        <p class="lead mb-4">Contactez-nous pour discuter de vos besoins spécifiques</p>
+        <a href="{% url 'contact' %}" class="btn btn-light btn-lg px-4 py-2">
+            <i class="fas fa-envelope me-2"></i>Nous contacter
+        </a>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.product-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+}
+
+.product-card .card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.product-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.bg-light-custom {
+    background-color: #f8f9fa;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Style pour la barre de recherche */
+.search-form .form-control {
+    border-radius: 25px 0 0 25px;
+    border-right: none;
+}
+
+.search-form .btn {
+    border-radius: 0 25px 25px 0;
+    border-left: none;
+}
+
+.search-form .btn-outline-secondary {
+    border-radius: 50%;
+    margin-left: 10px;
+}
+
+/* Animation pour le bouton de recherche */
+.search-form .btn:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Animation au scroll
+AOS.init({
+    duration: 800,
+    once: true,
+    offset: 100
+});
+ 
+ // Soumettre le formulaire automatiquement après 1 seconde d'inactivité
+let searchTimeout;
+document.querySelector('input[name="q"]').addEventListener('input', function(e) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        this.form.submit();
+    }, 1000);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,294 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Produits - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h2 mb-0">
+                        <i class="fas fa-store me-2"></i>Gestion des Produits
+                    </h1>
+                    <p class="text-muted mb-0">Gérez vos produits et catégories</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'dashboard:add_category' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-1"></i>Nouvelle catégorie
+                    </a>
+                    <a href="{% url 'dashboard:add_product' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Nouveau produit
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-2">
+                        <i class="fas fa-tags fa-2x text-primary"></i>
+                    </div>
+                    <h3 class="h1 mb-0">{{ total_categories }}</h3>
+                    <p class="text-muted mb-0">Catégories</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-2">
+                        <i class="fas fa-box fa-2x text-success"></i>
+                    </div>
+                    <h3 class="h1 mb-0">{{ total_products }}</h3>
+                    <p class="text-muted mb-0">Produits</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle fa-2x text-info"></i>
+                    </div>
+                    <h3 class="h1 mb-0">{{ active_products }}</h3>
+                    <p class="text-muted mb-0">Actifs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-2">
+                        <i class="fas fa-warehouse fa-2x text-warning"></i>
+                    </div>
+                    <h3 class="h1 mb-0">{{ products_in_stock }}</h3>
+                    <p class="text-muted mb-0">En stock</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>Catégories
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if categories %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Nom</th>
+                                    <th>Description</th>
+                                    <th>Ordre</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for categorie in categories %}
+                                <tr>
+                                    <td>
+                                        {% if categorie.image %}
+                                        <img src="{{ categorie.image.url }}" alt="{{ categorie.nom }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-light d-flex align-items-center justify-content-center rounded" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ categorie.nom }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ categorie.produit_set.count }} produit(s)</small>
+                                    </td>
+                                    <td>{{ categorie.description|truncatewords:10 }}</td>
+                                    <td>{{ categorie.ordre }}</td>
+                                    <td>
+                                        {% if categorie.est_actif %}
+                                        <span class="badge bg-success">Actif</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Inactif</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'dashboard:edit_category' categorie.id %}" class="btn btn-outline-primary" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="post" action="{% url 'dashboard:delete_category' categorie.id %}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette catégorie ?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucune catégorie trouvée</p>
+                        <a href="{% url 'dashboard:add_category' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Créer une catégorie
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-box me-2"></i>Produits
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if products %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="productsTable">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Nom</th>
+                                    <th>Catégorie</th>
+                                    <th>Prix</th>
+                                    <th>Stock</th>
+                                    <th>Statut</th>
+                                    <th>Promotion</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for produit in products %}
+                                <tr>
+                                    <td>
+                                        {% if produit.image_principale %}
+                                        <img src="{{ produit.image_principale.url }}" alt="{{ produit.nom }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                        {% else %}
+                                        <div class="bg-light d-flex align-items-center justify-content-center rounded" style="width: 50px; height: 50px;">
+                                            <i class="fas fa-image text-muted"></i>
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ produit.nom }}</strong>
+                                        {% if produit.reference %}
+                                        <br>
+                                        <small class="text-muted">Ref: {{ produit.reference }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ produit.categorie.nom }}</span>
+                                    </td>
+                                    <td>
+                                        {% if produit.est_en_promotion %}
+                                        <div>
+                                            <span class="text-muted text-decoration-line-through">{{ produit.prix }} FCFA</span>
+                                            <br>
+                                            <span class="text-danger fw-bold">{{ produit.prix_actuel }} FCFA</span>
+                                        </div>
+                                        {% else %}
+                                        <span class="fw-bold">{{ produit.prix }} FCFA</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if produit.stock > 0 %}
+                                        <span class="badge bg-success">{{ produit.stock }}</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Rupture</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <form method="post" action="{% url 'dashboard:toggle_product_status' produit.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm {% if produit.est_actif %}btn-success{% else %}btn-secondary{% endif %}" title="{{ produit.est_actif|yesno:'Désactiver,Activer' }}">
+                                                {% if produit.est_actif %}
+                                                <i class="fas fa-eye"></i>
+                                                {% else %}
+                                                <i class="fas fa-eye-slash"></i>
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        {% if produit.est_en_promotion %}
+                                        <span class="badge bg-warning text-dark">En promotion</span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">Non</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'produit_detail' produit.id %}" class="btn btn-outline-info" title="Voir" target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'dashboard:edit_product' produit.id %}" class="btn btn-outline-primary" title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <form method="post" action="{% url 'dashboard:delete_product' produit.id %}" class="d-inline" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit ?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger" title="Supprimer">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-box fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Aucun produit trouvé</p>
+                        <a href="{% url 'dashboard:add_product' %}" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i>Créer un produit
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Initialiser DataTable pour les produits
+    $('#productsTable').DataTable({
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/fr-FR.json"
+        },
+        "order": [[1, "asc"]],
+        "pageLength": 25,
+        "responsive": true
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Ajouter une Actualité - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-newspaper text-info"></i> Ajouter une Actualité
+        </h1>
+        <a href="{% url 'dashboard:news_manager' %}" class="btn btn-secondary btn-icon-split">
+            <span class="icon text-white-50">
+                <i class="fas fa-arrow-left"></i>
+            </span>
+            <span class="text">Retour à la liste</span>
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Nouvelle Actualité</h6>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.titre.id_for_label }}" class="form-label">
+                                Titre <span class="text-danger">*</span>
+                            </label>
+                            {{ form.titre }}
+                            {% if form.titre.errors %}
+                                <div class="text-danger small">
+                                    {{ form.titre.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.description_courte.id_for_label }}" class="form-label">
+                                Description courte <span class="text-danger">*</span>
+                            </label>
+                            {{ form.description_courte }}
+                            <small class="form-text text-muted">
+                                Résumé de l'actualité (max 200 caractères)
+                            </small>
+                            {% if form.description_courte.errors %}
+                                <div class="text-danger small">
+                                    {{ form.description_courte.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                Description détaillée <span class="text-danger">*</span>
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small">
+                                    {{ form.description.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="form-group mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">
+                                Image d'illustration
+                            </label>
+                            {{ form.image }}
+                            <small class="form-text text-muted">
+                                Formats: JPG, JPEG, PNG, WEBP
+                            </small>
+                            {% if form.image.errors %}
+                                <div class="text-danger small">
+                                    {{ form.image.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.date_publication.id_for_label }}" class="form-label">
+                                Date de publication
+                            </label>
+                            {{ form.date_publication }}
+                            {% if form.date_publication.errors %}
+                                <div class="text-danger small">
+                                    {{ form.date_publication.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <label for="{{ form.ordre.id_for_label }}" class="form-label">
+                                Ordre d'affichage
+                            </label>
+                            {{ form.ordre }}
+                            <small class="form-text text-muted">
+                                Plus le nombre est petit, plus l'actualité apparaît en premier
+                            </small>
+                            {% if form.ordre.errors %}
+                                <div class="text-danger small">
+                                    {{ form.ordre.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                {{ form.est_actif }}
+                                <label class="form-check-label" for="{{ form.est_actif.id_for_label }}">
+                                    Activer l'actualité
+                                </label>
+                            </div>
+                            {% if form.est_actif.errors %}
+                                <div class="text-danger small">
+                                    {{ form.est_actif.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <hr>
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'dashboard:news_manager' %}" class="btn btn-secondary me-2">
+                                <i class="fas fa-times"></i> Annuler
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Enregistrer l'actualité
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Image preview
+function previewImage(input) {
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            // Create preview if not exists
+            if (!$('#image-preview').length) {
+                $('#{{ form.image.id_for_label }}').after('<div class="mt-2"><img id="image-preview" src="#" alt="Preview" class="img-thumbnail" style="max-width: 200px; display: none;"></div>');
+            }
+            $('#image-preview').attr('src', e.target.result).show();
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+$('#{{ form.image.id_for_label }}').change(function() {
+    previewImage(this);
+});
+</script>
+{% endblock %}

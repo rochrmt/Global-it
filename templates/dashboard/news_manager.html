@@ -1,0 +1,172 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Actualités - Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-newspaper text-info"></i> Gestion des Actualités
+        </h1>
+        <div>
+            <a href="{% url 'dashboard:add_news' %}" class="btn btn-primary btn-icon-split">
+                <span class="icon text-white-50">
+                    <i class="fas fa-plus"></i>
+                </span>
+                <span class="text">Ajouter une actualité</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Actualités
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_news }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-newspaper fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Actualités Actives
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ active_news }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-eye fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Actualités Inactives
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ inactive_news }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-eye-slash fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DataTable -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Liste des Actualités</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Titre</th>
+                            <th>Description courte</th>
+                            <th>Date de publication</th>
+                            <th>Ordre</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for actualite in news %}
+                        <tr>
+                            <td>
+                                {% if actualite.image %}
+                                    <img src="{{ actualite.image.url }}" alt="{{ actualite.titre }}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+                                {% else %}
+                                    <div class="bg-light text-center" style="width: 50px; height: 50px; line-height: 50px; border-radius: 5px;">
+                                        <i class="fas fa-image text-muted"></i>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ actualite.titre }}</strong>
+                            </td>
+                            <td>{{ actualite.description_courte|truncatewords:10 }}</td>
+                            <td>{{ actualite.date_publication|date:"d/m/Y H:i" }}</td>
+                            <td>{{ actualite.ordre }}</td>
+                            <td>
+                                {% if actualite.est_actif %}
+                                    <span class="badge badge-success">Actif</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Inactif</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex justify-content-center">
+                                    <form method="post" action="{% url 'dashboard:toggle_news_status' actualite.id %}" class="me-1">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm {% if actualite.est_actif %}btn-warning{% else %}btn-success{% endif %}" 
+                                                title="{% if actualite.est_actif %}Désactiver{% else %}Activer{% endif %}">
+                                            <i class="fas {% if actualite.est_actif %}fa-eye-slash{% else %}fa-eye{% endif %}"></i>
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'dashboard:edit_news' actualite.id %}" class="btn btn-info btn-sm me-1" title="Modifier">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="post" action="{% url 'dashboard:delete_news' actualite.id %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette actualité ?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm" title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">
+                                <i class="fas fa-newspaper fa-3x my-3"></i>
+                                <p>Aucune actualité trouvée.</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    $('#dataTable').DataTable({
+        "language": {
+            "url": "{% static 'vendor/datatables/French.json' %}"
+        },
+        "order": [[3, "desc"]] // Trier par date de publication (desc)
+    });
+});
+</script>
+{% endblock %}
